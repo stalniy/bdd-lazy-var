@@ -1,13 +1,28 @@
 {
-  "name": "bdd+lazy-var",
+  "name": "bdd-lazy-var",
   "version": "0.0.1",
   "author": "Sergii Stotskyi",
-  "description": "Lazy variables for mocha.js",
+  "description": "Provides \"ui\" for mocha.js which allows to define lazy variables and subjects",
   "license": "MIT",
-  "main": "lib/interface.js",
+  "main": "./index",
   "devDependencies": {
-    "mocha": "~2.2",
+    "browserify": "10.2.4",
+    "browserify-shim": "^3.8.11",
     "chai": "~3.3",
-    "chai-spies": "~0.7"
+    "chai-spies": "~0.7",
+    "eslint": "~1.10",
+    "mocha": "~2.2"
+  },
+  "scripts": {
+    "test": "node spec/runner.js",
+    "build-for-browser": "browserify --ignore mocha index.js -o bdd-lazy-var.js"
+  },
+  "browserify-shim": {
+    "mocha": "global:Mocha"
+  },
+  "browserify": {
+    "transform": [
+      "browserify-shim"
+    ]
   }
 }
