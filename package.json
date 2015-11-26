@@ -1,0 +1,13 @@
+{
+  "name": "bdd+lazy-var",
+  "version": "0.0.1",
+  "author": "Sergii Stotskyi",
+  "description": "Lazy variables for mocha.js",
+  "license": "MIT",
+  "main": "lib/interface.js",
+  "devDependencies": {
+    "mocha": "~2.2",
+    "chai": "~3.3",
+    "chai-spies": "~0.7"
+  }
+}
