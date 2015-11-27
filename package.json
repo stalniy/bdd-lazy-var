@@ -4,6 +4,23 @@
   "author": "Sergii Stotskyi",
   "description": "Provides \"ui\" for mocha.js which allows to define lazy variables and subjects",
   "license": "MIT",
+  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:stalniy/bdd-lazy-var.git"
+  },
+  "keywords": [
+    "mocha.js",
+    "bdd",
+    "lazy",
+    "variable",
+    "syntax",
+    "dsl",
+    "subject"
+  ],
+  "bugs": {
+    "url": "https://github.com/stalniy/bdd-lazy-var/issues"
+  },
   "main": "./index",
   "devDependencies": {
     "browserify": "10.2.4",

@@ -71,10 +71,21 @@ describe('Lazy variables interface', function() {
     var index = 0;
     var currentIndex;
 
-    before('uses own defined variable', expectUseCorrectVariable);
-    beforeEach('uses variable defined in suite', expectUseCorrectVariable);
-    afterEach('uses variable defined in suite', expectUseCorrectVariable);
-    after('uses own defined variable', expectUseCorrectVariable);
+    before(function() {
+      expect(get('currentIndex')).to.equal(currentIndex);
+    });
+
+    beforeEach('uses own defined variable in "beforeEach" callback even when it is run for nested tests', function() {
+      expect(get('currentIndex')).to.equal(currentIndex);
+    });
+
+    afterEach('uses own defined variable in "afterEach" callback even when it is run for nested tests', function() {
+      expect(get('currentIndex')).to.equal(currentIndex);
+    });
+
+    after('uses own defined variable', function() {
+      expect(get('currentIndex')).to.equal(currentIndex);
+    });
 
     def('name', function() {
       return get('firstName') + ' ' + get('lastName');
@@ -82,7 +93,6 @@ describe('Lazy variables interface', function() {
 
     def('firstName', user.firstName);
     def('lastName', user.lastName);
-    def('isChild', false);
 
     def('currentIndex', function() {
       currentIndex = ++index;
@@ -97,13 +107,23 @@ describe('Lazy variables interface', function() {
     describe('nested suite', function() {
       var user = { firstName: 'Alex' };
 
-      before('uses own defined variable', expectUseCorrectVariable);
-      beforeEach('uses variable defined in suite', expectUseCorrectVariable);
-      afterEach('uses variable defined in suite', expectUseCorrectVariable);
-      after('uses own defined variable', expectUseCorrectVariable);
+      before(function() {
+        expect(get('currentIndex')).to.equal(currentIndex.toString());
+      });
+
+      beforeEach('uses own defined variable in "beforeEach" callback even when it is run for nested tests', function() {
+        expect(get('currentIndex')).to.equal(currentIndex.toString());
+      });
+
+      afterEach('uses own defined variable in "afterEach" callback even when it is run for nested tests', function() {
+        expect(get('currentIndex')).to.equal(currentIndex.toString());
+      });
+
+      after('uses own defined variable', function() {
+        expect(get('currentIndex')).to.equal(currentIndex.toString());
+      });
 
       def('firstName', user.firstName);
-      def('isChild', true);
 
       def('currentIndex', function() {
         return get('currentIndex').toString();
@@ -121,13 +141,5 @@ describe('Lazy variables interface', function() {
         expect(get('currentIndex')).to.equal(currentIndex.toString());
       });
     });
-
-    function expectUseCorrectVariable() {
-      if (get('isChild')) {
-        expect(get('currentIndex')).to.equal(currentIndex.toString());
-      } else {
-        expect(get('currentIndex')).to.equal(currentIndex);
-      }
-    }
   });
 });

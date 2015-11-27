@@ -8,27 +8,33 @@ var lazyVar = require('./lazy_var');
 
 module.exports = Mocha.interfaces['bdd-lazy-var'] = function(rootSuite) {
   var currentlyDefinedSuite = rootSuite;
-  var currentlyRunningSuites = [];
   var currentlyRetrievedVarName;
+  var currentlyRunningSuite = null;
 
   Mocha.interfaces.bdd(rootSuite);
-  rootSuite.on('pre-require', function(context) {
+  rootSuite.on('pre-require', function(context, file, mocha) {
     context.subject = function(definition) {
       return arguments.length === 1 ? context.def('subject', definition) : context.get('subject');
     };
 
     context.get = function(name) {
+      var originalSuite = currentlyRunningSuite;
+
       if (name === currentlyRetrievedVarName) {
-        currentlyRunningSuites.index--;
+        currentlyRunningSuite = Object.getPrototypeOf(originalSuite);
       }
 
       try {
         currentlyRetrievedVarName = name;
 
-        return lazyVar.getOrCreate(currentlyRunningSuites[currentlyRunningSuites.index], name);
+        // console.log('get "%s" for "%s"', name, currentlyRunningSuite.title);
+
+        return lazyVar.getOrCreate(currentlyRunningSuite, name);
       } finally {
         currentlyRetrievedVarName = null;
-        currentlyRunningSuites.index = currentlyRunningSuites.length - 1;
+        currentlyRunningSuite = originalSuite;
+
+        // console.log('restore to "%s"', currentlyRunningSuite.title);
       }
     };
 
@@ -42,22 +48,19 @@ module.exports = Mocha.interfaces['bdd-lazy-var'] = function(rootSuite) {
         currentlyDefinedSuite = this;
 
         context.before(registerSuite);
+        context.beforeEach(registerSuite);
+        context.afterEach(registerSuite);
+        context.after(registerSuite);
         runTests.apply(this, arguments);
         context.afterEach(lazyVar.cleanUp);
-        context.after(unregisterSuite);
+        context.after(lazyVar.cleanUp);
+
+        currentlyDefinedSuite = null;
       });
     };
 
     function registerSuite() {
-      currentlyRunningSuites.push(this);
-      currentlyRunningSuites.index = currentlyRunningSuites.length - 1;
-    }
-
-    function unregisterSuite() {
-      if (currentlyRunningSuites.length > 0) {
-        currentlyRunningSuites.pop();
-        currentlyRunningSuites.index = currentlyRunningSuites.length - 1;
-      }
+      currentlyRunningSuite = this;
     }
 
     context.context = context.describe;
