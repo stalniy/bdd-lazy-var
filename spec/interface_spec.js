@@ -142,4 +142,30 @@ describe('Lazy variables interface', function() {
       });
     });
   });
+
+  describe('when fallbacks to parent variable definition through suites tree', function() {
+    def('var', 'John');
+
+    describe('nested suite without variable definition', function() {
+      it('fallbacks to parent variable definition', function() {
+        expect(get('var')).to.equal('John');
+      });
+
+      describe('nested suite with variable definition', function() {
+        def('var', function() {
+          return get('var') + ' Doe';
+        });
+
+        it('uses correct parent variable definition', function() {
+          expect(get('var')).to.equal('John Doe');
+        });
+
+        describe('one more nested suite without variable definition', function() {
+          it('uses correct parent variable definition', function() {
+            expect(get('var')).to.equal('John Doe');
+          });
+        });
+      });
+    });
+  });
 });

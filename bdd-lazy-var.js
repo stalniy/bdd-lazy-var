@@ -8,44 +8,47 @@ var lazyVar = require('./lazy_var');
 
 module.exports = Mocha.interfaces['bdd-lazy-var'] = function(rootSuite) {
   var currentlyDefinedSuite = rootSuite;
-  var currentlyRetrievedVarName;
-  var currentlyRunningSuite = null;
+  var currentTestContext;
 
   Mocha.interfaces.bdd(rootSuite);
-  rootSuite.on('pre-require', function(context, file, mocha) {
+  rootSuite.on('pre-require', function(context) {
     context.subject = function(definition) {
       return arguments.length === 1 ? context.def('subject', definition) : context.get('subject');
     };
 
-    context.get = function(name) {
-      var originalSuite = currentlyRunningSuite;
+    context.get = function(varName) {
+      var originalSuite = currentTestContext;
 
-      if (name === currentlyRetrievedVarName) {
-        currentlyRunningSuite = Object.getPrototypeOf(originalSuite);
+      if (varName === currentTestContext._definesVariable) {
+        currentTestContext = getParentContextFor(varName, currentTestContext);
       }
 
       try {
-        currentlyRetrievedVarName = name;
+        currentTestContext._definesVariable = varName;
 
-        // console.log('get "%s" for "%s"', name, currentlyRunningSuite.title);
-
-        return lazyVar.getOrCreate(currentlyRunningSuite, name);
+        return lazyVar.getOrCreate(currentTestContext, varName);
       } finally {
-        currentlyRetrievedVarName = null;
-        currentlyRunningSuite = originalSuite;
-
-        // console.log('restore to "%s"', currentlyRunningSuite.title);
+        delete currentTestContext._definesVariable;
+        currentTestContext = originalSuite;
       }
     };
 
-    context.def = function(name, definition) {
-      return lazyVar.register(currentlyDefinedSuite.ctx, name, definition);
+    context.def = function(varName, definition) {
+      if (lazyVar.isDefined(currentlyDefinedSuite.ctx, varName)) {
+        registerParentContextFor(varName, currentlyDefinedSuite);
+      }
+
+      return lazyVar.register(currentlyDefinedSuite.ctx, varName, definition);
     };
 
     var describe = context.describe;
     context.describe = function(title, runTests) {
       return describe(title, function() {
         currentlyDefinedSuite = this;
+
+        context.before(function() {
+          this.title = title;
+        });
 
         context.before(registerSuite);
         context.beforeEach(registerSuite);
@@ -60,7 +63,19 @@ module.exports = Mocha.interfaces['bdd-lazy-var'] = function(rootSuite) {
     };
 
     function registerSuite() {
-      currentlyRunningSuite = this;
+      currentTestContext = this;
+    }
+
+    function registerParentContextFor(varName, suite) {
+      if (!suite.ctx.hasOwnProperty('_parentContextForLazyVars')) {
+        suite.ctx._parentContextForLazyVars = {};
+      }
+
+      suite.ctx._parentContextForLazyVars[varName] = suite.parent.ctx;
+    }
+
+    function getParentContextFor(varName, testContext) {
+      return testContext._parentContextForLazyVars ? testContext._parentContextForLazyVars[varName] : null;
     }
 
     context.context = context.describe;
@@ -72,16 +87,34 @@ module.exports = Mocha.interfaces['bdd-lazy-var'] = function(rootSuite) {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./lazy_var":3}],3:[function(require,module,exports){
 var varsToClean = [];
+var prop = require('./symbol').for;
+var createdVarsPropName = prop('__createdVars');
 
-function propNameFor(varName) {
-  var name = '_lazy_' + varName + '_definition';
+function definitionNameFor(varName) {
+  return prop('__' + varName + 'LazyDefinition');
+}
 
-  return typeof Symbol !== 'undefined' ? Symbol.for(name) : name;
+function getDefinition(context, definitionName) {
+  return context[definitionName];
+}
+
+function markVarAsCreated(context, definitionName) {
+  if (!context.hasOwnProperty(createdVarsPropName)) {
+    context[createdVarsPropName] = {};
+  }
+
+  context[createdVarsPropName][definitionName] = getDefinition(context, definitionName);
+}
+
+function isCreated(context, definitionName) {
+  var calledDefinitions = context[createdVarsPropName] || {};
+
+  return calledDefinitions[definitionName] === getDefinition(context, definitionName);
 }
 
 var lazyVar = {
   register: function(context, name, definition) {
-    var propName = propNameFor(name);
+    var propName = definitionNameFor(name);
 
     if (context.hasOwnProperty(propName)) {
       throw new Error('Cannot define "' + name + '" variable twice in the same suite.');
@@ -90,23 +123,25 @@ var lazyVar = {
     context[propName] = definition;
   },
 
+  isDefined: function(context, name) {
+    return context && definitionNameFor(name) in context;
+  },
+
   getOrCreate: function(context, name) {
-    if (!(propNameFor(name) in context)) {
-      throw new Error('"' + name + '" is not defined.');
+    if (!lazyVar.isDefined(context, name)) {
+      throw new Error('Lazy variable "' + name + '" is not defined.');
     }
 
-    var definition = lazyVar.getDefinition(context, name);
+    var definitionName = definitionNameFor(name);
+    var definition = getDefinition(context, definitionName);
 
-    if (!context.hasOwnProperty(name)) {
+    if (!(name in context) || !isCreated(context, definitionName)) {
       context[name] = typeof definition === 'function' ? definition() : definition;
+      markVarAsCreated(context, definitionName);
       varsToClean.push({ context: context, name: name });
     }
 
     return context[name];
-  },
-
-  getDefinition: function(context, name) {
-    return context[propNameFor(name)];
   },
 
   cleanUp: function() {
@@ -117,10 +152,20 @@ var lazyVar = {
   destroy: function(variable) {
     if (variable.context.hasOwnProperty(variable.name)) {
       delete variable.context[variable.name];
+      delete variable.context[createdVarsPropName];
     }
   }
 };
 
 module.exports = lazyVar;
+
+},{"./symbol":4}],4:[function(require,module,exports){
+var indentity = function(value) {
+  return value;
+};
+
+module.exports = {
+  for: typeof Symbol === 'undefined' ? indentity : Symbol.for
+};
 
 },{}]},{},[1]);
