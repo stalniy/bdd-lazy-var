@@ -18,11 +18,12 @@ var mocha = new Mocha({
 
 ## Features
 * all variables are defined lazily, so order doesn't matter.
-* `subject` accessor as alias for `def('subject', ...)` and `get('subject')`
-* ability to redefine outer variable
+* `subject` accessor as an alias for `def('subject', ...)` and `get('subject')`
+* ability to redefine parent's variable
 * fallback to parent's variables
 * fallback to parent's variable inside the same definition (i.e. `subject` inside `subject` definition will refer to parent's `subejct`)
 * all variables are cleaned after each test
+* `get.variable` or `get.definitionOf` for creating getters for variables
 
 ## Examples
 ```js

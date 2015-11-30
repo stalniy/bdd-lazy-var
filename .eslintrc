@@ -1,6 +1,13 @@
 {
+  "globals": {
+    "def": true,
+    "get": true,
+    "expect": true
+  },
+
   "env": {
-    "node": true
+    "node": true,
+    "mocha": true
   },
 
   "rules": {

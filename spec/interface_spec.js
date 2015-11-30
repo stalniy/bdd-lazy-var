@@ -20,6 +20,17 @@ describe('Lazy variables interface', function() {
     it('can define static variable', function() {
       expect(get('staticVar')).to.equal(value);
     });
+
+    it('defines "get.variable" and its alias "get.definitionOf" getter builder', function() {
+      expect(get.variable).to.be.a('function');
+      expect(get.variable).to.equal(get.definitionOf);
+    });
+
+    it('allows to get variable using builder', function() {
+      var getStatic = get.variable('staticVar');
+
+      expect(getStatic()).to.equal(get('staticVar'));
+    });
   });
 
   describe('dynamic variable definition', function() {

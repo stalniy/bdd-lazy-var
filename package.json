@@ -28,11 +28,12 @@
     "chai": "~3.3",
     "chai-spies": "~0.7",
     "eslint": "~1.10",
-    "mocha": "~2.2"
+    "mocha": "~2.2",
+    "uglify-js": "^2.6.1"
   },
   "scripts": {
     "test": "node spec/runner.js",
-    "build-for-browser": "browserify --ignore mocha index.js -o bdd-lazy-var.js"
+    "build-for-browser": "browserify --ignore mocha index.js | uglifyjs > bdd-lazy-var.js"
   },
   "browserify-shim": {
     "mocha": "global:Mocha"
