@@ -31,6 +31,10 @@ describe('Lazy variables interface', function() {
 
       expect(getStatic()).to.equal(get('staticVar'));
     });
+
+    it('allows to access variable using "this" keyword (i.e. "this.lazyVarName")', function() {
+      expect(this.var).to.equal(get('var'));
+    });
   });
 
   describe('dynamic variable definition', function() {
@@ -60,7 +64,7 @@ describe('Lazy variables interface', function() {
       expect(get('var')).to.equal(prevValue + 1);
     });
 
-    after('uses newly generated variable', function() {
+    after('uses newly created variable', function() {
       expect(get('var')).to.equal(valueInAfterEach + 1);
     });
 
@@ -175,6 +179,26 @@ describe('Lazy variables interface', function() {
           it('uses correct parent variable definition', function() {
             expect(get('var')).to.equal('John Doe');
           });
+        });
+      });
+    });
+  });
+
+  describe('when variable is used inside "afterEach" of parent and child suites', function() {
+    var subjectInChild;
+
+    subject(function() {
+      return {};
+    });
+
+    describe('parent suite', function() {
+      afterEach(function() {
+        expect(subject()).to.equal(subjectInChild);
+      });
+
+      describe('child suite', function() {
+        it('uses the same variable instance', function() {
+          subjectInChild = subject();
         });
       });
     });
