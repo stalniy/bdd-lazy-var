@@ -1,6 +1,6 @@
 {
   "name": "bdd-lazy-var",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Sergii Stotskyi",
   "description": "Provides \"ui\" for mocha.js which allows to define lazy variables and subjects",
   "license": "MIT",
@@ -16,7 +16,8 @@
     "variable",
     "syntax",
     "dsl",
-    "subject"
+    "subject",
+    "rspec"
   ],
   "bugs": {
     "url": "https://github.com/stalniy/bdd-lazy-var/issues"
