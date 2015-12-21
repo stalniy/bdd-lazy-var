@@ -84,8 +84,8 @@ describe('Lazy variables interface', function() {
       expect(get('var')).to.equal(prevValue + 1);
     });
 
-    it('shares the same value between "before" and first "beforeEach" calls', function() {
-      expect(valueInBefore).to.equal(valueInFirstBeforeEach);
+    it('does not share the same value between "before" and first "beforeEach" calls', function() {
+      expect(valueInBefore).not.to.equal(valueInFirstBeforeEach);
     });
   });
 
