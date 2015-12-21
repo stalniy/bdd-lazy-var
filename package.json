@@ -33,7 +33,8 @@
     "uglify-js": "^2.6.1"
   },
   "scripts": {
-    "test": "node spec/runner.js",
+    "test-interface": "NODE_PATH=. mocha -r ./spec/config -u index spec/interface_spec.js",
+    "test": "npm run test-interface",
     "build-for-browser": "browserify --ignore mocha index.js | uglifyjs > bdd-lazy-var.js"
   },
   "browserify-shim": {
