@@ -36,12 +36,16 @@
     "uglify-js": "^2.6.1"
   },
   "scripts": {
-    "test-interface": "mocha -r ./spec/config -u index spec/interface_spec.js",
-    "test-global-vars": "mocha -r ./spec/config -u global spec/global_defs_spec.js",
-    "test": "NODE_PATH=. npm run test-interface && npm run test-global-vars",
-    "build-default": "browserify --ignore mocha index.js | uglifyjs > bdd_lazy_var.js",
-    "build-global": "browserify --ignore mocha global.js | uglifyjs > bdd_lazy_var_global.js",
-    "build": "npm run build-default && npm run build-global"
+    "test-mocha-ui": "mocha -r ./spec/config -u index spec/interface_spec.js",
+    "test-global-ui": "mocha -r ./spec/config -u global spec/global_defs_spec.js",
+    "test-getter-ui": "mocha -r ./spec/config -u getter spec/getter_defs_spec.js",
+    "test-mocha": "npm run test-mocha-ui && npm run test-global-ui && npm run test-getter-ui",
+    "test": "NODE_PATH=. npm run test-mocha",
+    "build-mocha-ui": "browserify --ignore mocha index.js | uglifyjs > bdd_lazy_var.js",
+    "build-global-ui": "browserify --ignore mocha global.js | uglifyjs > bdd_lazy_var_global.js",
+    "build-getter-ui": "browserify --ignore mocha getter.js | uglifyjs > bdd_lazy_var_getter.js",
+    "build-mocha": "npm run build-mocha-ui && npm run build-global-ui && npm run build-getter-ui",
+    "build": "npm run build-mocha"
   },
   "browserify-shim": {
     "mocha": "global:Mocha"
