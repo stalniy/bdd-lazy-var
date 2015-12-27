@@ -1,4 +1,4 @@
-# Mocha BDD + lazy variable definition (aka rspec)
+# Mocha BDD + lazy variable definition (aka rspec) [![Build Status](https://travis-ci.org/stalniy/bdd-lazy-var.svg?branch=master)](https://travis-ci.org/stalniy/bdd-lazy-var)
 Provides "ui" for mocha.js which allows to define lazy variables and subjects.
 
 ## Installation
