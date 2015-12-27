@@ -6,9 +6,12 @@ describe('Lazy variables interface', function() {
     def('var', definition);
     def('staticVar', value);
 
-    def('varWithThisInside', function() {
-      return this.staticVar;
+    def('fullName', function() {
+      return this.firstName + ' ' + this.lastName;
     });
+
+    def('firstName', 'John');
+    def('lastName', 'Doe');
 
     it('does not create variable if it has not been accessed', function() {
       expect(definition).not.to.have.been.called();
@@ -37,11 +40,19 @@ describe('Lazy variables interface', function() {
     });
 
     it('allows to access variable using "this" keyword (i.e. "this.lazyVarName")', function() {
-      expect(this.var).to.equal(get('var'));
+      expect(this.staticVar).to.equal(get('staticVar'));
     });
 
     it('allows to access other variables inside definition using "this"', function() {
-      expect(this.varWithThisInside).to.equal(this.staticVar);
+      expect(this.fullName).to.equal('John Doe');
+    });
+
+    describe('nested suite', function() {
+      def('lastName', 'Smith');
+
+      it('uses suite specific variable inside dynamic parent variable', function() {
+        expect(this.fullName).to.equal('John Smith');
+      });
     });
   });
 

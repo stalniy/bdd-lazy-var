@@ -1,1 +1,1 @@
-module.exports = require('./lib/interface/mocha');
+module.exports = require('./lib/interface/mocha/bdd');

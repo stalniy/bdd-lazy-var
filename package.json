@@ -23,19 +23,25 @@
     "url": "https://github.com/stalniy/bdd-lazy-var/issues"
   },
   "main": "./index",
+  "peerDependencies": {
+    "mocha": "^2.0.0"
+  },
   "devDependencies": {
     "browserify": "10.2.4",
     "browserify-shim": "^3.8.11",
     "chai": "~3.3",
     "chai-spies": "~0.7",
     "eslint": "~1.10",
-    "mocha": "~2.2",
+    "mocha": "^2.0.0",
     "uglify-js": "^2.6.1"
   },
   "scripts": {
-    "test-interface": "NODE_PATH=. mocha -r ./spec/config -u index spec/interface_spec.js",
-    "test": "npm run test-interface",
-    "build-for-browser": "browserify --ignore mocha index.js | uglifyjs > bdd-lazy-var.js"
+    "test-interface": "mocha -r ./spec/config -u index spec/interface_spec.js",
+    "test-global-vars": "mocha -r ./spec/config -u global spec/global_defs_spec.js",
+    "test": "NODE_PATH=. npm run test-interface && npm run test-global-vars",
+    "build-default": "browserify --ignore mocha index.js | uglifyjs > bdd_lazy_var.js",
+    "build-global": "browserify --ignore mocha global.js | uglifyjs > bdd_lazy_var_global.js",
+    "build": "npm run build-default && npm run build-global"
   },
   "browserify-shim": {
     "mocha": "global:Mocha"
