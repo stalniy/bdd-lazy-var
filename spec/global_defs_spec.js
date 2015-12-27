@@ -1,4 +1,8 @@
-describe('Globally defined lazy vars', function() {
+describe('Interface with globally defined lazy vars', function() {
+  includeExamplesFor('Lazy Vars Interface', function(name) {
+    return global['$' + name];
+  });
+
   describe('by default', function() {
     subject(function() {
       return {};
@@ -33,14 +37,6 @@ describe('Globally defined lazy vars', function() {
 
     it('does not allow to redefine existing variable in global context', function() {
       expect($bddLazyCounter).to.be.null;
-    });
-  });
-
-  describe('when suite is finished', function() {
-    it('removes its variables from global scope', function() {
-      expect(global.$subject).not.to.exist;
-      expect(global.$firstName).not.to.exist;
-      expect(global.$anotherVar).not.to.exist;
     });
   });
 });

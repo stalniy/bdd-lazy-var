@@ -1,4 +1,8 @@
 describe('Lazy vars defined as getter on "get" function', function() {
+  includeExamplesFor('Lazy Vars Interface', function(name) {
+    return get[name];
+  });
+
   describe('by default', function() {
     subject(function() {
       return {};
@@ -33,14 +37,6 @@ describe('Lazy vars defined as getter on "get" function', function() {
 
     it('does not allow to redefine existing variable in global context', function() {
       expect(get.bddLazyCounter).to.be.null;
-    });
-  });
-
-  describe('when suite is finished', function() {
-    it('removes getters of its variables from "get" function', function() {
-      expect(get.subject).not.to.exist;
-      expect(get.firstName).not.to.exist;
-      expect(get.anotherVar).not.to.exist;
     });
   });
 });
