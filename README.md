@@ -6,7 +6,8 @@ Provides "ui" for mocha.js which allows to define lazy variables and subjects.
 npm install bdd-lazy-var --save-dev
 ```
 
-Browser version: `bdd-lazy-var.js`.Node version: `index.js`.
+Browser versions: `bdd_lazy_var.js`, `bdd_lazy_var_global.js`, `bdd_lazy_var_getter.js`.
+Node versions: `index.js`, `global.js`, `getter.js`.
 
 ## How to use
 Command line: `mocha -u bdd-lazy-var` or in JavaScript:
@@ -16,7 +17,7 @@ var mocha = new Mocha({
 });
 ```
 
-If you want to access vars by their names use `bdd-lazy-var/global` ui.
+If you want to access vars using more readable form use `bdd-lazy-var/global` or `bdd-lazy-var/getter` ui.
 
 ## Features
 * all variables are defined lazily, so order doesn't matter.
@@ -26,7 +27,11 @@ If you want to access vars by their names use `bdd-lazy-var/global` ui.
 * fallback to parent's variable inside the same definition (i.e. `subject` inside `subject` definition will refer to parent's `subject`)
 * all variables are cleaned after each test
 * `get.variable` or `get.definitionOf` for creating getters for variables
-* access variables using `this`, `get(variableName)` or by their names prefixed by `$` using `bdd-lazy-var/global` (i.e. `$subject`)
+* access variables using:
+  * `this.variableName` (i.e. `this.fullName`)
+  * `get(variableName)` (i.e. `get('fullName')`)
+  * `$variableName` (i.e. `$fullName`, only with `bdd-lazy-var/global`)
+  * `get.variableName` (i.e. `get.fullName`, only with `bdd-lazy-var/getter`)
 
 ## Examples for `bdd-lazy-var`
 ```js
@@ -84,6 +89,19 @@ describe('Array', function() {
 
   it('has 3 elements by default', function() {
     expect($subject).to.have.length(3);
+  });
+});
+```
+
+## Examples for `bdd-lazy-var/getter`
+```js
+describe('Suite', function() {
+  subject(function() {
+    return new Suite();
+  });
+
+  it('has parent', function() {
+    expect(get.subject).to.have.keys('parent');
   });
 });
 ```
