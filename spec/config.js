@@ -1,7 +1,21 @@
-var chai = require('chai');
+(function(factory) {
+  if (typeof window === 'object') {
+    window.global = window;
+    factory(window.chai, window);
+  } else if (typeof require === 'function' && typeof module !== 'undefined') {
+    require('chai').use(require('chai-spies'));
+    factory(require('chai'), global);
+  }
+})(function(chai, global) {
+  global.expect = chai.expect;
+  global.spy = chai.spy;
 
-chai.use(require('chai-spies'));
-require('..');
+  var examples = {};
+  global.sharedExamplesFor = function(name, defs) {
+    examples[name] = defs;
+  };
 
-global.expect = chai.expect;
-global.spy = chai.spy;
+  global.includeExamplesFor = function(name) {
+    examples[name].apply(this, Array.prototype.slice.call(arguments, 1));
+  };
+});
