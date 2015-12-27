@@ -23,6 +23,7 @@ module.exports = function(config) {
   config.set({
     basePath: '..',
     frameworks: [ 'mocha' ],
+    transports: [ 'xhr-polling', 'polling' ],
     reporters: [ 'dots' ],
     port: 9876,
     logLevel: config.LOG_INFO,
