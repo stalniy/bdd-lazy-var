@@ -1,6 +1,46 @@
 # Mocha BDD + lazy variable definition (aka rspec) [![Build Status](https://travis-ci.org/stalniy/bdd-lazy-var.svg?branch=master)](https://travis-ci.org/stalniy/bdd-lazy-var)
 Provides "ui" for mocha.js which allows to define lazy variables and subjects.
 
+## Purpose
+Stop writing
+```js
+describe('Suite', function() {
+  var name;
+  
+  beforeEach(function() {
+    name = getName();
+  });
+  
+  afterEach(function() {
+    name = null;
+  });
+  
+  it('uses name variable', function() {
+    expect(name).to.exist;
+  });
+  
+  it('does not use name but anyway it is created in beforeEach', function() {
+    expect(1).to.equal(1);
+  });
+});
+```
+And just use lazy vars which are created only when accessed and cleared automatically after each test
+```js
+describe('Suite', function() {
+  def('name', function() {
+    return getName();
+  });
+  
+  it('uses name variable', function() {
+    expect($name).to.exist
+  });
+  
+  it('does not use name, so it is not created', function() {
+    expect(1).to.equal(1);
+  });
+});
+```
+
 ## Installation
 ```bash
 npm install bdd-lazy-var --save-dev
