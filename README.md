@@ -74,6 +74,33 @@ If you want to access vars using more readable form use `bdd-lazy-var/global` or
   * `$variableName` (i.e. `$fullName`, only with `bdd-lazy-var/global`)
   * `get.variableName` (i.e. `get.fullName`, only with `bdd-lazy-var/getter`)
 
+```
+## Examples for `bdd-lazy-var/global`
+```js
+describe('Array', function() {
+  subject(function() {
+    return [ 1, 2, 3 ];
+  });
+
+  it('has 3 elements by default', function() {
+    expect($subject).to.have.length(3);
+  });
+});
+```
+
+## Examples for `bdd-lazy-var/getter`
+```js
+describe('Suite', function() {
+  subject(function() {
+    return new Suite();
+  });
+
+  it('has parent', function() {
+    expect(get.subject).to.have.keys('parent');
+  });
+});
+```
+
 ## Examples for `bdd-lazy-var`
 ```js
 describe('Suite', function() {
@@ -120,29 +147,3 @@ describe('Suite', function() {
     });
   });
 });
-```
-## Examples for `bdd-lazy-var/global`
-```js
-describe('Array', function() {
-  subject(function() {
-    return [ 1, 2, 3 ];
-  });
-
-  it('has 3 elements by default', function() {
-    expect($subject).to.have.length(3);
-  });
-});
-```
-
-## Examples for `bdd-lazy-var/getter`
-```js
-describe('Suite', function() {
-  subject(function() {
-    return new Suite();
-  });
-
-  it('has parent', function() {
-    expect(get.subject).to.have.keys('parent');
-  });
-});
-```
