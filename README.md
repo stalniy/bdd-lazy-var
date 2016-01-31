@@ -61,6 +61,7 @@ If you want to access vars using more readable form use `bdd-lazy-var/global` or
 
 ## Features
 * all variables are defined lazily, so order doesn't matter.
+* accessible inside `before` and `after` callbacks
 * `subject` accessor as an alias for `def('subject', ...)` and `get('subject')`
 * ability to redefine parent's variable
 * fallback to parent's variables
