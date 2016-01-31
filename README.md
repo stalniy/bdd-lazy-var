@@ -74,7 +74,6 @@ If you want to access vars using more readable form use `bdd-lazy-var/global` or
   * `$variableName` (i.e. `$fullName`, only with `bdd-lazy-var/global`)
   * `get.variableName` (i.e. `get.fullName`, only with `bdd-lazy-var/getter`)
 
-```
 ## Examples for `bdd-lazy-var/global`
 ```js
 describe('Array', function() {
