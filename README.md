@@ -53,7 +53,7 @@ Node versions: `index.js`, `global.js`, `getter.js`.
 Command line: `mocha -u bdd-lazy-var` or in JavaScript:
 ```js
 var mocha = new Mocha({
-  ui: 'bdd-lazy-var'
+  ui: 'bdd-lazy-var' // bdd-lazy-var/global or bdd-lazy-var/getter
 });
 ```
 
