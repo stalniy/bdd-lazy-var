@@ -138,7 +138,7 @@ describe('Suite', function() {
     });
 
     it('defines subject', function() {
-      expect(subejct()).to.be.an('object');
+      expect(subject()).to.be.an('object');
     });
 
     it('can be retrieved via `this`', function() {
