@@ -222,4 +222,18 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
       });
     });
   });
+
+  describe('variables in skipped suite', function() {
+    subject([]);
+
+    describe.skip('Suite', function() {
+      var object = {};
+
+      subject(object);
+
+      it('defines variables inside skipped suites', function() {
+        expect(getVar('subject')).to.equal(object);
+      });
+    });
+  });
 });
