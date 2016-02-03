@@ -7,26 +7,6 @@ describe('Lazy vars defined as getter on "get" function', function() {
     return {};
   })
 
-  describe.skip('test me', function() {
-    subject(function() {
-      return [];
-    });
-
-    it('is empty', function() {
-      expect(get.subject).to.be.empty;
-    })
-
-    describe.skip('opa', function() {
-      subject(function() {
-        return 1;
-      });
-
-      it('bla', function() {
-        expect(get.subject).to.equal(1);
-      })
-    })
-  })
-
   describe('by default', function() {
     subject(function() {
       return {};
