@@ -181,9 +181,15 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
     def('var', 'John');
 
     describe('nested suite without variable definition', function() {
+      def('hasVariables', true);
+
       it('fallbacks to parent variable definition', function() {
         expect(getVar('var')).to.equal('John');
       });
+
+      it('can define other variables inside', function() {
+        expect(getVar('hasVariables')).to.be.true;
+      })
 
       describe('nested suite with variable definition', function() {
         def('var', function() {
