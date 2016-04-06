@@ -6,19 +6,19 @@ Stop writing
 ```js
 describe('Suite', function() {
   var name;
-  
+
   beforeEach(function() {
     name = getName();
   });
-  
+
   afterEach(function() {
     name = null;
   });
-  
+
   it('uses name variable', function() {
     expect(name).to.exist;
   });
-  
+
   it('does not use name but anyway it is created in beforeEach', function() {
     expect(1).to.equal(1);
   });
@@ -30,11 +30,11 @@ describe('Suite', function() {
   def('name', function() {
     return getName();
   });
-  
+
   it('uses name variable', function() {
     expect($name).to.exist
   });
-  
+
   it('does not use name, so it is not created', function() {
     expect(1).to.equal(1);
   });
@@ -63,6 +63,7 @@ If you want to access vars using more readable form use `bdd-lazy-var/global` or
 * all variables are defined lazily, so order doesn't matter.
 * accessible also inside `before`, `after` callbacks
 * `subject` accessor as an alias for `def('subject', ...)` and `get('subject')`
+* named subjects to be more explicit
 * ability to redefine parent's variable
 * fallback to parent's variables
 * fallback to parent's variable inside the same definition (i.e. `subject` inside `subject` definition will refer to parent's `subject`)
