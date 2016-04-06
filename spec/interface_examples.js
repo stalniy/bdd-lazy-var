@@ -222,4 +222,32 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
       });
     });
   });
+
+  describe('named subject', function() {
+    var subjectValue = {};
+
+    subject('named', subjectValue);
+
+    it('is accessible by referencing "subject" variable', function() {
+      expect(getVar('subject')).to.equal(subjectValue);
+    });
+
+    it('is accessible by referencing subject name variable', function() {
+      expect(getVar('named')).to.equal(subjectValue);
+    });
+
+    describe('nested suite', function() {
+      var nestedSubjectValue = {};
+
+      subject('nested', nestedSubjectValue);
+
+      it('shadows parent "subject" variable', function() {
+        expect(getVar('subject')).to.equal(nestedSubjectValue);
+      });
+
+      it('can access parent subject by its name', function() {
+        expect(getVar('named')).to.equal(subjectValue);
+      });
+    });
+  });
 });
