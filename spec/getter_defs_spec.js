@@ -3,6 +3,10 @@ describe('Lazy vars defined as getter on "get" function', function() {
     return get[name];
   });
 
+  subject(function() {
+    return {};
+  })
+
   describe('by default', function() {
     subject(function() {
       return {};

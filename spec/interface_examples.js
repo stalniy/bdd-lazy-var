@@ -181,9 +181,15 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
     def('var', 'John');
 
     describe('nested suite without variable definition', function() {
+      def('hasVariables', true);
+
       it('fallbacks to parent variable definition', function() {
         expect(getVar('var')).to.equal('John');
       });
+
+      it('can define other variables inside', function() {
+        expect(getVar('hasVariables')).to.be.true;
+      })
 
       describe('nested suite with variable definition', function() {
         def('var', function() {
@@ -247,6 +253,20 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
 
       it('can access parent subject by its name', function() {
         expect(getVar('named')).to.equal(subjectValue);
+      });
+    });
+  });
+
+  describe('variables in skipped suite', function() {
+    subject([]);
+
+    describe.skip('Skipped suite', function() {
+      var object = {};
+
+      subject(object);
+
+      it('defines variables inside skipped suites', function() {
+        expect(getVar('subject')).to.equal(object);
       });
     });
   });
