@@ -56,6 +56,38 @@ var mocha = new Mocha({
   ui: 'bdd-lazy-var' // bdd-lazy-var/global or bdd-lazy-var/getter
 });
 ```
+If you run tests in browser, you need to require/load `bdd_lazy_var*.js` (i.e., `bdd_lazy_var.js`, `bdd_lazy_var_getter.js` or `bdd_lazy_var_global.js`) and then `ui` option for mocha should be `bdd-lazy-var/global` (or `bdd-lazy-var/getter` or `bdd-lazy-var`, depends on which you prefer).
+
+So, in `karma.config.js` it looks like this:
+```js
+// karma.config.js
+module.exports = function(config) {
+  config.set({
+    // ....
+    files: [
+      // ....
+      require.resolve('bdd-lazy-var/bdd_lazy_var_global');
+    ],
+    client: {
+      mocha: {
+        ui: 'bdd-lazy-var/global'
+      }
+    }
+  });
+}
+```
+Or regular mocha configuration:
+```js
+let Mocha = require('mocha');
+require('bdd-lazy-var/bdd_lazy_var_global');
+
+let runner = new Mocha({
+  ui: 'bdd-lazy-var/global'
+});
+
+runner.addFile('path/to/spec/file');
+runner.run();
+```
 
 If you want to access vars using more readable form use `bdd-lazy-var/global` or `bdd-lazy-var/getter` ui.
 
