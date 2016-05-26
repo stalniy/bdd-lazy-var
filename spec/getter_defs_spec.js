@@ -1,7 +1,10 @@
 describe('Lazy vars defined as getter on "get" function', function() {
-  includeExamplesFor('Lazy Vars Interface', function(name) {
+  function getVar(name) {
     return get[name];
-  });
+  }
+
+  includeExamplesFor('Lazy Vars Interface', getVar);
+  includeExamplesFor('Lazy Vars getters cleanup', getVar);
 
   subject(function() {
     return {};

@@ -1,7 +1,10 @@
 describe('Interface with globally defined lazy vars', function() {
-  includeExamplesFor('Lazy Vars Interface', function(name) {
+  function getVar(name) {
     return global['$' + name];
-  });
+  }
+
+  includeExamplesFor('Lazy Vars Interface', getVar);
+  includeExamplesFor('Lazy Vars getters cleanup', getVar);
 
   describe('by default', function() {
     subject(function() {

@@ -18,7 +18,7 @@ module.exports = function(config) {
     'node_modules/chai-spies/chai-spies.js',
     'spec/config.js'
   );
-  specs.unshift('spec/interface_examples.js');
+  specs.unshift('spec/interface_examples.js', 'spec/getters_cleanup_examples.js');
 
   config.set({
     basePath: '..',
