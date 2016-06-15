@@ -39,7 +39,7 @@
     "uglify-js": "^2.6.1"
   },
   "scripts": {
-    "mocha": "NODE_PATH=. mocha -r spec/config -r spec/interface_examples -r spec/getters_cleanup_examples",
+    "mocha": "NODE_PATH=. mocha -r spec/config -r spec/interface_examples",
     "test-mocha-ui": "npm run mocha -- -u index.js spec/interface_spec.js",
     "test-browser-mocha-ui": "karma start -u bdd-lazy-var --src bdd_lazy_var.js --specs spec/interface_spec.js spec/karma.config.js",
     "test-global-ui": "npm run mocha -- -u global.js spec/global_defs_spec.js",
