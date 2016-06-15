@@ -4,15 +4,19 @@
     "get": true,
     "expect": true
   },
-
   "env": {
     "node": true,
     "mocha": true
   },
-
   "rules": {
-    "comma-dangle": [ 2, "never" ],
-    "no-cond-assign": [ 2, "always" ],
+    "comma-dangle": [
+      2,
+      "never"
+    ],
+    "no-cond-assign": [
+      2,
+      "always"
+    ],
     "no-debugger": 2,
     "no-console": 1,
     "no-constant-condition": 2,
@@ -33,19 +37,26 @@
     "valid-typeof": 2,
     "block-scoped-var": 2,
     "curly": 2,
-    "dot-notation": [2, { "allowKeywords": true }],
-    "dot-location": [ 2, "property" ],
+    "dot-notation": [
+      2,
+      {
+        "allowKeywords": true
+      }
+    ],
+    "dot-location": [
+      2,
+      "property"
+    ],
     "eqeqeq": 2,
     "no-caller": 2,
     "no-else-return": 2,
-    "no-empty-label": 2,
+    "no-labels": 2,
     "no-eq-null": 2,
     "no-eval": 2,
     "no-extra-bind": 2,
     "no-fallthrough": 2,
     "no-floating-decimal": 2,
     "no-implied-eval": 2,
-    "no-lone-blocks": 2,
     "no-lone-blocks": 2,
     "no-multi-spaces": 2,
     "no-multi-str": 2,
@@ -58,57 +69,135 @@
     "no-unused-expressions": 2,
     "no-with": 2,
     "radix": 2,
-    "wrap-iife": [2, "inside"],
+    "wrap-iife": [
+      2,
+      "inside"
+    ],
     "strict": 0,
     "no-catch-shadow": 2,
     "no-shadow": 1,
     "no-undef-init": 2,
     "no-undefined": 2,
     "no-unused-vars": 2,
-    "no-use-before-define": [2, "nofunc"],
-
-    "brace-style": [ 2, "1tbs" ],
-    "camelcase": [2, { "properties": "always" }],
-    "comma-spacing": [2, { "before": false, "after": true }],
-    "comma-style": [2, "last"],
+    "no-use-before-define": [
+      2,
+      "nofunc"
+    ],
+    "brace-style": [
+      2,
+      "1tbs"
+    ],
+    "camelcase": [
+      2,
+      {
+        "properties": "always"
+      }
+    ],
+    "comma-spacing": [
+      2,
+      {
+        "before": false,
+        "after": true
+      }
+    ],
+    "comma-style": [
+      2,
+      "last"
+    ],
     "eol-last": 2,
-    "indent": [ 2, 2, { "indentSwitchCase": true }],
-    "key-spacing": [2, {
-      "beforeColon": false,
-      "afterColon": true
-    }],
+    "indent": [
+      2,
+      2,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "key-spacing": [
+      2,
+      {
+        "beforeColon": false,
+        "afterColon": true
+      }
+    ],
     "consistent-return": 0,
-    "linebreak-style": 2,
-    "max-nested-callbacks": [2, 5],
+    "linebreak-style": 0,
+    "max-nested-callbacks": [
+      2,
+      5
+    ],
     "new-cap": 2,
     "new-parens": 2,
     "no-lonely-if": 2,
     "no-mixed-spaces-and-tabs": 2,
-    "no-multiple-empty-lines": [1, { "max": 2 }],
+    "no-multiple-empty-lines": [
+      1,
+      {
+        "max": 2
+      }
+    ],
     "no-nested-ternary": 2,
     "no-new-object": 2,
     "no-spaced-func": 2,
     "no-trailing-spaces": 2,
     "no-underscore-dangle": 0,
     "no-unneeded-ternary": 2,
-    "no-wrap-func": 2,
-    "object-curly-spacing": [2, "always"],
-    "operator-linebreak": [2, "after"],
-    "quotes": [2, "single", "avoid-escape"],
-    "semi": [2, "always"],
-    "space-after-keywords": [2, "always"],
-    "space-before-blocks": [2, "always"],
-    "space-before-function-paren": [2, "never"],
-    "space-in-brackets": [2, "always", { "propertyName": false }],
-    "space-in-parens": [2, "never"],
+    "operator-linebreak": [
+      2,
+      "after"
+    ],
+    "quotes": [
+      2,
+      "single",
+      "avoid-escape"
+    ],
+    "semi": [
+      2,
+      "always"
+    ],
+    "keyword-spacing": [
+      2
+    ],
+    "space-before-blocks": [
+      2,
+      "always"
+    ],
+    "space-before-function-paren": [
+      2,
+      "never"
+    ],
+    "object-curly-spacing": [
+      2,
+      "always"
+    ],
+    "space-in-parens": [
+      2,
+      "never"
+    ],
     "space-infix-ops": 2,
-    "space-return-throw-case": 2,
-    "space-unary-ops": [1, { "words": true, "nonwords": false }],
-    "spaced-line-comment": [2, "always"],
-    "max-depth": [2, 3],
-    "max-len": [2, 120, 4],
-    "max-params": [1, 5],
-    "no-bitwise": 1,
-    "linebreak-style": 0
+    "space-unary-ops": [
+      1,
+      {
+        "words": true,
+        "nonwords": false
+      }
+    ],
+    "spaced-comment": [
+      2,
+      "always"
+    ],
+    "max-depth": [
+      2,
+      3
+    ],
+    "max-len": [
+      2,
+      120,
+      4
+    ],
+    "max-params": [
+      1,
+      5
+    ],
+    "no-bitwise": 1
   }
 }
