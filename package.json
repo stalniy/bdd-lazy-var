@@ -24,7 +24,8 @@
   },
   "main": "./index",
   "peerDependencies": {
-    "mocha": "^2.0.0"
+    "mocha": "^2.0.0",
+    "karma-mocha": "^1.1.1"
   },
   "devDependencies": {
     "browserify": "10.2.4",
@@ -33,7 +34,7 @@
     "chai-spies": "~0.7",
     "eslint": "~1.10",
     "karma": "^0.13.16",
-    "karma-mocha": "^0.2.1",
+    "karma-mocha": "^1.1.1",
     "karma-firefox-launcher": "^0.1.7",
     "mocha": "^2.0.0",
     "uglify-js": "^2.6.1"
