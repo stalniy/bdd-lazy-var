@@ -50,36 +50,43 @@ Browser versions: `bdd_lazy_var.js`, `bdd_lazy_var_global.js`, `bdd_lazy_var_get
 Node versions: `index.js`, `global.js`, `getter.js`.
 
 ## How to use
-Command line: `mocha -u bdd-lazy-var` or in JavaScript:
+
+#### Command line
+```sh
+mocha -u bdd-lazy-var
+```
+
+#### In JavaScript
 ```js
 var mocha = new Mocha({
   ui: 'bdd-lazy-var' // bdd-lazy-var/global or bdd-lazy-var/getter
 });
 ```
-If you run tests in browser, you need to require/load `bdd_lazy_var*.js` (i.e., `bdd_lazy_var.js`, `bdd_lazy_var_getter.js` or `bdd_lazy_var_global.js`) and then `ui` option for mocha should be `bdd-lazy-var/global` (or `bdd-lazy-var/getter` or `bdd-lazy-var`, depends on which you prefer).
+
+#### Using karma (via karma-mocha npm package)
+If you run tests via karma in browser, you need to require/load `bdd_lazy_var*.js` (i.e., `bdd_lazy_var.js`, `bdd_lazy_var_getter.js` or `bdd_lazy_var_global.js`) and then `ui` option for mocha should be `bdd-lazy-var/global` (or `bdd-lazy-var/getter` or `bdd-lazy-var`, depends on which you prefer).
+
+**Note** requires `karma-mocha` `^1.1.1`
 
 So, in `karma.config.js` it looks like this:
 ```js
-// karma.config.js
 module.exports = function(config) {
   config.set({
     // ....
-    files: [
-      // ....
-      require.resolve('bdd-lazy-var/bdd_lazy_var_global');
-    ],
     client: {
       mocha: {
-        ui: 'bdd-lazy-var/global'
+        ui: 'bdd-lazy-var/global',
+        require: [require.resolve('bdd-lazy-var/bdd_lazy_var_global')]
       }
     }
   });
 }
 ```
-Or regular mocha configuration:
+
+#### Running mocha via Node.js
 ```js
 let Mocha = require('mocha');
-require('bdd-lazy-var/bdd_lazy_var_global');
+require('bdd-lazy-var/global'); // this is optinal as Mocha automatically requires external ui in Node.js env
 
 let runner = new Mocha({
   ui: 'bdd-lazy-var/global'
