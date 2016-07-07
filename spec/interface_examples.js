@@ -281,19 +281,19 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
         return getVar('model').value;
       });
 
-      describe('suite which defines variable used in parent suite', () => {
+      describe('suite which defines variable used in parent suite', function() {
         def('value', function() {
           return { x: 5 };
         });
 
         subject(function() {
-          return getVar('subject').x
+          return getVar('subject').x;
         });
 
-        it('returns 5', () => {
-          expect(getVar('subject')).to.equal(5)
+        it('returns 5', function() {
+          expect(getVar('subject')).to.equal(5);
         })
-      })
-    })
+      });
+    });
   });
 });
