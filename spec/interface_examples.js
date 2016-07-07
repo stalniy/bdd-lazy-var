@@ -270,4 +270,30 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
       });
     });
   });
+
+  describe('referencing child lazy variable from parent', function() {
+    def('model', function() {
+      return { value: getVar('value') };
+    });
+
+    describe('nested suite', function() {
+      subject(function() {
+        return getVar('model').value;
+      });
+
+      describe('suite which defines variable used in parent suite', () => {
+        def('value', function() {
+          return { x: 5 };
+        });
+
+        subject(function() {
+          return getVar('subject').x
+        });
+
+        it('returns 5', () => {
+          expect(getVar('subject')).to.equal(5)
+        })
+      })
+    })
+  });
 });

@@ -1,3 +1,4 @@
+'use strict'
 describe('Interface with globally defined lazy vars', function() {
   function getVar(name) {
     return global['$' + name];
