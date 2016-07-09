@@ -255,6 +255,20 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
         expect(getVar('named')).to.equal(subjectValue);
       });
     });
+
+    describe('parent subject in child one', function() {
+      subject('nested', function() {
+        return getVar('subject');
+      });
+
+      it('can access parent subject inside named subject by accessing "subject" variable', function() {
+        expect(getVar('subject')).to.equal(subjectValue);
+      });
+
+      it('can access parent subject inside named subject by accessing subject by its name', function() {
+        expect(getVar('nested')).to.equal(subjectValue);
+      });
+    });
   });
 
   describe('variables in skipped suite', function() {
