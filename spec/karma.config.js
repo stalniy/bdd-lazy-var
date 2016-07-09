@@ -1,18 +1,9 @@
-var karmaMocha = require('karma-mocha');
-var initMocha = karmaMocha['framework:mocha'][1];
-
-karmaMocha['framework:mocha'][1] = function(files) {
-  initMocha.apply(this, arguments);
-  files.splice(1, 1);
-};
-
-karmaMocha['framework:mocha'][1].$inject = [ 'config.files', 'config.client.mocha' ];
+var path = require('path');
 
 module.exports = function(config) {
   var specs = (config.specs || '').split(',');
   var srcFiles = (config.src || '').split(',');
 
-  srcFiles.push(require.resolve('karma-mocha/lib/adapter'));
   srcFiles.unshift(
     'node_modules/chai/chai.js',
     'node_modules/chai-spies/chai-spies.js',
@@ -30,10 +21,13 @@ module.exports = function(config) {
     autoWatch: false,
     singleRun: true,
     browsers: [ 'Firefox' ],
-    files: srcFiles.concat(specs),
+    files: specs,
     client: {
       mocha: {
-        ui: config.u
+        ui: config.u,
+        require: srcFiles.reverse().map(function(filePath) {
+          return path.resolve(filePath);
+        })
       }
     }
   });
