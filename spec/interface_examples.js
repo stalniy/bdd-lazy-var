@@ -306,7 +306,27 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
 
         it('returns 5', function() {
           expect(getVar('subject')).to.equal(5);
-        })
+        });
+      });
+    });
+  });
+
+  describe('when parent variable is accessed multiple times inside child definition', function() {
+    subject(function() {
+      return { isParent: true, name: 'test' };
+    });
+
+    describe('child suite', function() {
+      subject(function() {
+        return {
+          isParent: !subject().isParent,
+          name: subject().name + ' child'
+        };
+      });
+
+      it('retrieves proper parent variable', function() {
+        expect(subject().isParent).to.be.false;
+        expect(subject().name).to.equal('test child');
       });
     });
   });
