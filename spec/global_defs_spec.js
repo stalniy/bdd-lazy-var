@@ -1,10 +1,10 @@
-'use strict'
 describe('Interface with globally defined lazy vars', function() {
   function getVar(name) {
     return global['$' + name];
   }
 
   includeExamplesFor('Lazy Vars Interface', getVar);
+  includeExamplesFor('Default suite tracking', getVar);
 
   describe('by default', function() {
     subject(function() {
