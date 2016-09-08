@@ -46,8 +46,8 @@ describe('Suite', function() {
 npm install bdd-lazy-var --save-dev
 ```
 
-Browser versions: `bdd_lazy_var.js`, `bdd_lazy_var_global.js`, `bdd_lazy_var_getter.js`.
-Node versions: `index.js`, `global.js`, `getter.js`.
+Browser versions: `bdd_lazy_var.js`, `bdd_lazy_var_global.js`, `bdd_lazy_var_getter.js`, `bdd_lazy_var_spec.js`.
+Node versions: `index.js`, `global.js`, `getter.js`, `rspec.js`.
 
 ## How to use
 
@@ -59,7 +59,7 @@ mocha -u bdd-lazy-var
 #### In JavaScript
 ```js
 var mocha = new Mocha({
-  ui: 'bdd-lazy-var' // bdd-lazy-var/global or bdd-lazy-var/getter
+  ui: 'bdd-lazy-var' // bdd-lazy-var/global or bdd-lazy-var/getter or bdd-lazy-var/rspec
 });
 ```
 
@@ -108,6 +108,7 @@ If you want to access vars using more readable form use `bdd-lazy-var/global` or
 * fallback to parent's variable inside the same definition (i.e. `subject` inside `subject` definition will refer to parent's `subject`)
 * all variables are cleaned after each test
 * `get.variable` or `get.definitionOf` for creating getters for variables
+* rspec variable tracking mechanizm as a custom mocha ui (i.e., `bdd-lazy-var/rspec`)
 * access variables using:
   * `this.variableName` (i.e. `this.fullName`)
   * `get(variableName)` (i.e. `get('fullName')`)
@@ -128,6 +129,41 @@ describe('Array', function() {
   });
 });
 ```
+
+## Examples for `bdd-lazy-var/rspec`
+The only difference between rspec and global ui is in variable tracking inside. By default, when variable is accessed inside `beforeEach/afterEach` mocha callback is retrieved from the suite where it's defined. On another hand, rspec ui retrieves variables from currently running suite. In other words:
+```js
+describe('User', function() {
+  subject(() => new User($attrs))
+
+  describe('when is active', function() {
+    def('attrs', () => {
+      return { isActive: true }
+    })
+
+    beforeEach(() => $user.save())
+
+    it('sets isActive to true', function() {
+      expect($user.isActive).to.be.true
+      expect(!$user.isNew).to.be.false
+    })
+
+    describe('when changed to inactive', function() {
+      def('attrs', () => {
+        return { isActive: false }
+      })
+
+      it('sets "isActive" to false', function() {
+        expect($user.isActive).to.be.false
+        expect(!$user.isNew).to.be.false
+      })
+    })
+  })
+})
+```
+In this case, `beforeEach` is running for each nested test as well and when it's run for `when changed to inactive sets "isActive" to false` it uses `$attrs` provided by suite `when changed to inactive`. And when it runs for `sets isActive to true` it uses `$attrs` from `when is active` suite. This is exactly the same behavior which rspec has.
+
+**Note**: all other `ui`s for the same tests uses variable definition from the suite where `beforeEach/afterEach` is defined. In that particular case, it's `$attrs` from `when is active` suite. As a result the last suite always fails.
 
 ## Examples for `bdd-lazy-var/getter`
 ```js
