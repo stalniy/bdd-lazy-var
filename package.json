@@ -24,7 +24,7 @@
   },
   "main": "./index",
   "peerDependencies": {
-    "mocha": "^2.0.0"
+    "mocha": "^3.0.0"
   },
   "devDependencies": {
     "browserify": "10.2.4",
@@ -35,7 +35,7 @@
     "karma": "^0.13.16",
     "karma-mocha": "^1.1.1",
     "karma-firefox-launcher": "^0.1.7",
-    "mocha": "^2.0.0",
+    "mocha": "^3.0.0",
     "uglify-js": "^2.6.1"
   },
   "scripts": {
