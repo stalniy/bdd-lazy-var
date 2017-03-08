@@ -110,7 +110,6 @@ If you want to access vars using more readable form use `bdd-lazy-var/global` or
 * `get.variable` or `get.definitionOf` for creating getters for variables
 * rspec variable tracking mechanizm as a custom mocha ui (i.e., `bdd-lazy-var/rspec`)
 * access variables using:
-  * `this.variableName` (i.e. `this.fullName`)
   * `get(variableName)` (i.e. `get('fullName')`)
   * `$variableName` (i.e. `$fullName`, only with `bdd-lazy-var/global`)
   * `get.variableName` (i.e. `get.fullName`, only with `bdd-lazy-var/getter`)
@@ -133,8 +132,21 @@ describe('Array', function() {
 ## Examples for `bdd-lazy-var/rspec`
 The only difference between rspec and global ui is in variable tracking inside. By default, when variable is accessed inside `beforeEach/afterEach` mocha callback is retrieved from the suite where it's defined. On another hand, rspec ui retrieves variables from currently running suite. In other words:
 ```js
+class User {
+  constructor(attrs) {
+     Object.assign(this, attrs)
+     this.id = Date.now()
+     this.isNew = true
+  }
+  
+  save() {
+    this.isNew = false
+    localStorage.setItem(`user-${this.id}`, JSON.stringify(this))
+  }
+}
+
 describe('User', function() {
-  subject(() => new User($attrs))
+  subject('user', () => new User($attrs))
 
   describe('when is active', function() {
     def('attrs', () => {
@@ -167,15 +179,17 @@ In this case, `beforeEach` is running for each nested test as well and when it's
 
 ## Examples for `bdd-lazy-var/getter`
 ```js
+var Suite = require('....')
+
 describe('Suite', function() {
   subject(function() {
-    return new Suite();
-  });
+    return new Suite()
+  })
 
   it('has parent', function() {
-    expect(get.subject).to.have.keys('parent');
-  });
-});
+    expect(get.subject).to.have.keys('parent')
+  })
+})
 ```
 
 ## Examples for `bdd-lazy-var`
@@ -217,10 +231,6 @@ describe('Suite', function() {
 
     it('defines subject', function() {
       expect(subject()).to.be.an('object');
-    });
-
-    it('can be retrieved via `this`', function() {
-      expect(this.subject).to.equal(subject());
     });
   });
 });
