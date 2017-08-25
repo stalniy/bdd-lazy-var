@@ -101,13 +101,13 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
   });
 
   describe('when fallbacks to parent variable definition through suites tree', function() {
-    def('var', 'John');
+    def('var', 'Doe');
 
     describe('nested suite without variable definition', function() {
       def('hasVariables', true);
 
       it('fallbacks to parent variable definition', function() {
-        expect(getVar('var')).to.equal('John');
+        expect(getVar('var')).to.equal('Doe');
       });
 
       it('can define other variables inside', function() {
@@ -116,7 +116,11 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
 
       describe('nested suite with variable definition', function() {
         def('var', function() {
-          return getVar('var') + ' Doe';
+          return get('anotherVar') + ' ' + getVar('var');
+        });
+
+        def('anotherVar', function() {
+          return 'John';
         });
 
         it('uses correct parent variable definition', function() {
