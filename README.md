@@ -1,4 +1,8 @@
-# Mocha BDD + lazy variable definition (aka rspec) [![Build Status](https://travis-ci.org/stalniy/bdd-lazy-var.svg?branch=master)](https://travis-ci.org/stalniy/bdd-lazy-var)
+# Mocha BDD + lazy variable definition (aka rspec)
+
+[![BDD Lazy Var NPM version](https://badge.fury.io/js/bdd-lazy-var.svg)](http://badge.fury.io/js/bdd-lazy-var)
+[![Build Status](https://travis-ci.org/stalniy/bdd-lazy-var.svg?branch=master)](https://travis-ci.org/stalniy/bdd-lazy-var)
+
 Provides "ui" for mocha.js which allows to define lazy variables and subjects.
 
 ## Purpose
@@ -138,7 +142,7 @@ class User {
      this.id = Date.now()
      this.isNew = true
   }
-  
+
   save() {
     this.isNew = false
     localStorage.setItem(`user-${this.id}`, JSON.stringify(this))
