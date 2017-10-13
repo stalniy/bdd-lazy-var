@@ -27,14 +27,14 @@
     "mocha": "^3.0.0 || ^2.3.0"
   },
   "devDependencies": {
-    "browserify": "10.2.4",
-    "browserify-shim": "^3.8.11",
-    "chai": "~3.3",
+    "browserify": "^14.4.0",
+    "browserify-shim": "^3.8.14",
+    "chai": "^3.5.0",
     "chai-spies": "~0.7",
     "eslint": "~1.10",
-    "karma": "^0.13.16",
-    "karma-mocha": "^1.1.1",
-    "karma-firefox-launcher": "^0.1.7",
+    "karma": "^1.7.1",
+    "karma-firefox-launcher": "^1.0.1",
+    "karma-mocha": "^1.3.0",
     "mocha": "^3.0.0",
     "uglify-js": "^2.6.1"
   },
