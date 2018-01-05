@@ -27,8 +27,9 @@
     "mocha": "^4.0.0 || ^3.0.0 || ^2.3.0"
   },
   "devDependencies": {
-    "browserify": "^14.4.0",
-    "browserify-shim": "^3.8.14",
+    "babel-core": "^6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-es2015": "^6.24.1",
     "chai": "^3.5.0",
     "chai-spies": "~0.7",
     "eslint": "~1.10",
@@ -36,34 +37,28 @@
     "karma-firefox-launcher": "^1.0.1",
     "karma-mocha": "^1.3.0",
     "mocha": "^4.0.0",
-    "uglify-js": "^2.6.1"
+    "rollup": "^0.53.3",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-commonjs": "^8.2.6"
   },
   "scripts": {
     "mocha": "NODE_PATH=. mocha -r spec/config -r spec/interface_examples -r spec/default_suite_tracking_examples",
     "test-mocha-ui": "npm run mocha -- -u index.js spec/interface_spec.js",
-    "test-browser-mocha-ui": "karma start -u bdd-lazy-var --src bdd_lazy_var.js --specs spec/interface_spec.js spec/karma.config.js",
+    "test-browser-mocha-ui": "karma start -u bdd-lazy-var --src index.js --specs spec/interface_spec.js spec/karma.config.js",
     "test-global-ui": "npm run mocha -- -u global.js spec/global_defs_spec.js",
-    "test-browser-global-ui": "karma start -u bdd-lazy-var/global --src bdd_lazy_var_global.js --specs spec/global_defs_spec.js,spec/interface_spec.js spec/karma.config.js",
+    "test-browser-global-ui": "karma start -u bdd-lazy-var/global --src global.js --specs spec/global_defs_spec.js,spec/interface_spec.js spec/karma.config.js",
     "test-getter-ui": "npm run mocha -- -u getter.js spec/getter_defs_spec.js",
-    "test-browser-getter-ui": "karma start -u bdd-lazy-var/getter --src bdd_lazy_var_getter.js --specs spec/getter_defs_spec.js,spec/interface_spec.js spec/karma.config.js",
+    "test-browser-getter-ui": "karma start -u bdd-lazy-var/getter --src getter.js --specs spec/getter_defs_spec.js,spec/interface_spec.js spec/karma.config.js",
     "test-rspec-ui": "npm run mocha -- -u rspec.js spec/rspec_defs_spec.js",
-    "test-browser-rspec-ui": "karma start -u bdd-lazy-var/rspec --src bdd_lazy_var_rspec.js --specs spec/rspec_defs_spec.js spec/karma.config.js",
+    "test-browser-rspec-ui": "karma start -u bdd-lazy-var/rspec --src rspec.js --specs spec/rspec_defs_spec.js spec/karma.config.js",
     "test-mocha": "npm run test-mocha-ui && npm run test-global-ui && npm run test-getter-ui && npm run test-rspec-ui",
     "test-mocha-in-browser": "npm run test-browser-mocha-ui && npm run test-browser-global-ui && npm run test-browser-getter-ui && npm run test-browser-rspec-ui",
     "test": "npm run test-mocha && npm run test-mocha-in-browser",
-    "build-mocha-ui": "browserify --ignore mocha index.js | uglifyjs > bdd_lazy_var.js",
-    "build-global-ui": "browserify --ignore mocha global.js | uglifyjs > bdd_lazy_var_global.js",
-    "build-getter-ui": "browserify --ignore mocha getter.js | uglifyjs > bdd_lazy_var_getter.js",
-    "build-rspec-ui": "browserify --ignore mocha rspec.js | uglifyjs > bdd_lazy_var_rspec.js",
+    "build-mocha-ui": "DEST_FILE=index.js SRC_FILE=mocha/bdd rollup -c tools/rollup.umd.js",
+    "build-global-ui": "DEST_FILE=global.js SRC_FILE=mocha/bdd_global_var rollup -c tools/rollup.umd.js",
+    "build-getter-ui": "DEST_FILE=getter.js SRC_FILE=mocha/bdd_getter_var rollup -c tools/rollup.umd.js",
+    "build-rspec-ui": "DEST_FILE=rspec.js SRC_FILE=mocha/rspec rollup -c tools/rollup.umd.js",
     "build-mocha": "npm run build-mocha-ui && npm run build-global-ui && npm run build-getter-ui && npm run build-rspec-ui",
     "build": "npm run build-mocha"
-  },
-  "browserify-shim": {
-    "mocha": "global:Mocha"
-  },
-  "browserify": {
-    "transform": [
-      "browserify-shim"
-    ]
   }
 }
