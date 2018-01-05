@@ -50,8 +50,7 @@ describe('Suite', function() {
 npm install bdd-lazy-var --save-dev
 ```
 
-Browser versions: `bdd_lazy_var.js`, `bdd_lazy_var_global.js`, `bdd_lazy_var_getter.js`, `bdd_lazy_var_spec.js`.
-Node versions: `index.js`, `global.js`, `getter.js`, `rspec.js`.
+UMD versions: `index.js`, `global.js`, `getter.js`, `rspec.js`.
 
 ## How to use
 
@@ -80,7 +79,7 @@ module.exports = function(config) {
     client: {
       mocha: {
         ui: 'bdd-lazy-var/global',
-        require: [require.resolve('bdd-lazy-var/bdd_lazy_var_global')]
+        require: [require.resolve('bdd-lazy-var/global')]
       }
     }
   });
@@ -89,10 +88,10 @@ module.exports = function(config) {
 
 #### Running mocha via Node.js
 ```js
-let Mocha = require('mocha');
+const Mocha = require('mocha');
 require('bdd-lazy-var/global'); // this is optinal as Mocha automatically requires external ui in Node.js env
 
-let runner = new Mocha({
+const runner = new Mocha({
   ui: 'bdd-lazy-var/global'
 });
 
@@ -104,19 +103,18 @@ If you want to access vars using more readable form use `bdd-lazy-var/global` or
 
 ## Features
 * all variables are defined lazily, so order doesn't matter.
-* accessible also inside `before`, `after` callbacks
+* all variables are cleaned after each test
+* accessible inside `before`, `after` callbacks
 * `subject` accessor as an alias for `def('subject', ...)` and `get('subject')`
 * named subjects to be more explicit
 * ability to redefine parent's variable
-* fallback to parent's variables
 * fallback to parent's variable inside the same definition (i.e. `subject` inside `subject` definition will refer to parent's `subject`)
-* all variables are cleaned after each test
-* `get.variable` or `get.definitionOf` for creating getters for variables
+* `get.variable` for creating getters for variables
 * rspec variable tracking mechanizm as a custom mocha ui (i.e., `bdd-lazy-var/rspec`)
 * access variables using:
-  * `get(variableName)` (i.e. `get('fullName')`)
   * `$variableName` (i.e. `$fullName`, only with `bdd-lazy-var/global`)
   * `get.variableName` (i.e. `get.fullName`, only with `bdd-lazy-var/getter`)
+  * `get(variableName)` (i.e. `get('fullName')`)
 
 For more information, follow [this link](https://medium.com/@sergiy.stotskiy/lazy-variables-with-mocha-js-d6063503104c#.ceo9jvrzh).
 

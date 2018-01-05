@@ -13,13 +13,18 @@ export default {
     file: process.env.DEST_FILE,
   },
   plugins: [
-    commonjs(),
+    commonjs({
+      include: 'lib/**',
+      ignore: []
+    }),
     babel({
       exclude: 'node_modules/**',
       presets: [
         ['es2015', { modules: false }]
       ],
-      plugins: ['external-helpers']
+      plugins: [
+        'external-helpers',
+      ]
     })
   ]
 };
