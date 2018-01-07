@@ -108,25 +108,16 @@ var VariableMetadata = function () {
   }
 
   createClass(VariableMetadata, [{
-    key: 'addAlias',
-    value: function addAlias(name) {
+    key: 'addName',
+    value: function addName(name) {
       this.aliases = this.aliases || {};
       this.aliases[name] = true;
+      return this;
     }
   }, {
-    key: 'hasAlias',
-    value: function hasAlias(name) {
+    key: 'isNamedAs',
+    value: function isNamedAs(name) {
       return this.aliases && this.aliases[name];
-    }
-  }, {
-    key: 'buildAliasMetadata',
-    value: function buildAliasMetadata(aliasName) {
-      var aliasMetadata = new VariableMetadata(null, null);
-
-      aliasMetadata.aliases = this.aliases;
-      this.addAlias(aliasName);
-
-      return aliasMetadata;
     }
   }]);
   return VariableMetadata;
@@ -140,7 +131,7 @@ var lazyVar = {
       throw new Error('Cannot define "' + name + '" variable twice in the same suite.');
     }
 
-    metadata.defs[name] = new VariableMetadata(definition, thisContext || context);
+    metadata.defs[name] = new VariableMetadata(definition, thisContext || context).addName(name);
     lazyVar.defineProperty(context, name, metadata);
   },
   metadataFor: function metadataFor(context, varName) {
@@ -176,8 +167,7 @@ var lazyVar = {
   registerAlias: function registerAlias(context, varName, aliasName) {
     var metadata = lazyVar.metadataFor(context);
 
-    metadata.defs[aliasName] = metadata.defs[varName].buildAliasMetadata(aliasName);
-    metadata.defs[aliasName].addAlias(varName);
+    metadata.defs[aliasName] = metadata.defs[varName].addName(aliasName);
     Object.defineProperty(context, aliasName, {
       get: function get$$1() {
         return this[varName];
@@ -245,7 +235,7 @@ var Variable = function () {
   createClass(Variable, [{
     key: 'isSame',
     value: function isSame(anotherVarName) {
-      return this.name && (this.name === anotherVarName || lazy_var.metadataFor(this.ownContext, this.name).hasAlias(anotherVarName));
+      return this.name && (this.name === anotherVarName || lazy_var.metadataFor(this.ownContext, this.name).isNamedAs(anotherVarName));
     }
   }, {
     key: 'value',
