@@ -24,6 +24,7 @@ export default {
       ],
       plugins: [
         'external-helpers',
+        'transform-object-assign'
       ]
     })
   ]

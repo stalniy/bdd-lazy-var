@@ -6,12 +6,6 @@
 
 mocha = mocha && mocha.hasOwnProperty('default') ? mocha['default'] : mocha;
 
-var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-
-
-
-
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
@@ -65,6 +59,20 @@ var defineProperty = function (obj, key, value) {
   }
 
   return obj;
+};
+
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
 };
 
 
@@ -132,6 +140,7 @@ var toConsumableArray = function (arr) {
 };
 
 var LAZY_VARS_FIELD = symbol.for('__lazyVars');
+var noop = function noop() {};
 
 var VariableMetadata = function () {
   function VariableMetadata(name, definition) {
@@ -176,45 +185,45 @@ var Metadata = function () {
     key: 'ensureDefinedOn',
     value: function ensureDefinedOn(context) {
       if (!context.hasOwnProperty(LAZY_VARS_FIELD)) {
-        var lazyVarsInPrototype = context[LAZY_VARS_FIELD];
-        context[LAZY_VARS_FIELD] = lazyVarsInPrototype ? lazyVarsInPrototype.addChild(context) : new Metadata(context);
+        context[LAZY_VARS_FIELD] = new Metadata();
       }
 
       return context[LAZY_VARS_FIELD];
     }
   }, {
-    key: 'ownBy',
-    value: function ownBy(context) {
-      if (context.hasOwnProperty(LAZY_VARS_FIELD)) {
-        return Metadata.of(context);
-      }
+    key: 'setVirtual',
+    value: function setVirtual(context, metadata) {
+      var virtualMetadata = Object.create(metadata);
+
+      virtualMetadata.releaseVars = noop;
+      context[LAZY_VARS_FIELD] = virtualMetadata;
     }
   }]);
 
-  function Metadata(context) {
+  function Metadata() {
     classCallCheck(this, Metadata);
 
-    this.context = context;
     this.defs = {};
-    this.created = {};
+    this.values = {};
+    this.hasValues = false;
+    this.defined = false;
   }
 
   createClass(Metadata, [{
     key: 'getVar',
     value: function getVar(name) {
-      if (!this.created.hasOwnProperty(name)) {
-        this.created[name] = this.defs[name].evaluate();
+      if (!this.values.hasOwnProperty(name)) {
+        this.hasValues = true;
+        this.values[name] = this.defs[name].evaluate();
       }
 
-      return this.created[name];
+      return this.values[name];
     }
   }, {
     key: 'addChild',
-    value: function addChild(context) {
-      var child = new Metadata(context);
-      child.defs = Object.create(this.defs);
-
-      return child;
+    value: function addChild(child) {
+      child.defs = _extends(Object.create(this.defs), child.defs);
+      child.parent = this.defined ? this : this.parent;
     }
   }, {
     key: 'addVar',
@@ -223,7 +232,9 @@ var Metadata = function () {
         throw new Error('Cannot define "' + name + '" variable twice in the same suite.');
       }
 
+      this.defined = true;
       this.defs[name] = new VariableMetadata(name, definition);
+
       return this;
     }
   }, {
@@ -234,7 +245,10 @@ var Metadata = function () {
   }, {
     key: 'releaseVars',
     value: function releaseVars() {
-      this.created = {};
+      if (this.hasValues) {
+        this.values = {};
+        this.hasValues = false;
+      }
     }
   }]);
   return Metadata;
@@ -286,13 +300,13 @@ var Variable = function () {
 
     this.name = varName;
     this.context = context;
-    this.ownContext = context;
+    this.meta = context ? Metadata$1.of(context) : null;
   }
 
   createClass(Variable, [{
     key: 'isSame',
     value: function isSame(anotherVarName) {
-      return this.name && (this.name === anotherVarName || Metadata$1.of(this.ownContext, this.name).isNamedAs(anotherVarName));
+      return this.name && (this.name === anotherVarName || Metadata$1.of(this.context, this.name).isNamedAs(anotherVarName));
     }
   }, {
     key: 'value',
@@ -315,21 +329,21 @@ var Variable = function () {
   }, {
     key: 'valueInParentContext',
     value: function valueInParentContext(varOrAliasName) {
-      var prevContext = this.context;
+      var prevMeta = this.meta;
 
       try {
-        this.context = this.getParentContextFor(varOrAliasName);
-        return Metadata$1.of(this.context).getVar(varOrAliasName);
+        this.meta = this.getParentMetadataFor(varOrAliasName);
+        return this.meta.getVar(varOrAliasName);
       } finally {
-        this.context = prevContext;
+        this.meta = prevMeta;
       }
     }
   }, {
-    key: 'getParentContextFor',
-    value: function getParentContextFor(varName) {
-      var metadata$$1 = Metadata$1.of(this.context, varName);
+    key: 'getParentMetadataFor',
+    value: function getParentMetadataFor(varName) {
+      var metadata$$1 = this.meta;
 
-      if (!metadata$$1 || !metadata$$1.parent) {
+      if (!metadata$$1 || !metadata$$1.defs[varName]) {
         throw new Error('Unknown parent variable "' + varName + '".');
       }
 
@@ -349,7 +363,7 @@ var _interface = createCommonjsModule(function (module) {
 
   module.exports = function (context, tracker, options) {
     function get$$1(varName) {
-      return variable.evaluate(varName, { in: tracker.currentContext() });
+      return variable.evaluate(varName, { in: tracker.currentContext });
     }
 
     get$$1.definitionOf = get$$1.variable = function (varName) {
@@ -363,8 +377,7 @@ var _interface = createCommonjsModule(function (module) {
         def(varName[0], definition);
         defineAliasesFor(suite, varName[0], varName.slice(1));
       } else {
-        Metadata.ensureDefinedOn(suite.ctx).addVar(varName, definition);
-        detectParentDeclarationFor(suite, varName);
+        Metadata.ensureDefinedOn(suite).addVar(varName, definition);
         runHook('onDefineVariable', suite, varName);
       }
     }
@@ -399,20 +412,11 @@ var _interface = createCommonjsModule(function (module) {
       }
     }
 
-    function detectParentDeclarationFor(suite, varName) {
-      var parentVarMetadata = suite.parent ? Metadata.of(suite.parent.ctx, varName) : null;
-
-      if (parentVarMetadata) {
-        Metadata.of(suite.ctx, varName).parent = suite.parent.ctx;
-      }
-    }
-
     function defineAliasesFor(suite, varName, aliases) {
-      var metadata$$1 = Metadata.of(suite.ctx);
+      var metadata$$1 = Metadata.of(suite);
 
       aliases.forEach(function (alias) {
         metadata$$1.addAliasFor(varName, alias);
-        detectParentDeclarationFor(suite, alias);
         runHook('onDefineVariable', suite, alias);
       });
     }
@@ -423,61 +427,90 @@ var _interface = createCommonjsModule(function (module) {
 
 var Metadata$2 = metadata.Metadata;
 
+
+var immediate = typeof setImmediate === 'function' ? setImmediate : function (callback) {
+  return setTimeout(callback, 0);
+};
+
 var SuiteTracker = function () {
   function SuiteTracker() {
     var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     classCallCheck(this, SuiteTracker);
 
     this.state = { currentlyDefinedSuite: config.rootSuite };
-    this.currentContext = this.currentContext.bind(this);
-    this.watcher = this.buildWatcher();
-    this.testInterface = createTestInterface(config);
   }
 
   createClass(SuiteTracker, [{
-    key: 'buildWatcher',
-    value: function buildWatcher() {
-      var self = this;
-
-      return {
-        registerSuite: function registerSuite() {
-          return self.registerSuite(this);
-        },
-        cleanUp: function cleanUp() {
-          return self.cleanUp(this);
-        },
-        cleanUpAndRestorePrev: function cleanUpAndRestorePrev() {
-          return self.cleanUpAndRestorePrev(this);
-        }
-      };
-    }
-  }, {
-    key: 'currentContext',
-    value: function currentContext() {
-      return this.state.currentTestContext;
-    }
-  }, {
     key: 'wrapSuite',
-    value: function wrapSuite(fn) {
-      var self = this;
+    value: function wrapSuite(describe) {
+      var tracker = this;
 
       return function detectSuite(title, defineTests) {
         for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
           args[_key - 2] = arguments[_key];
         }
 
-        return fn.apply(undefined, [title, function defineSuite() {
-          var previousDefinedSuite = self.state.currentlyDefinedSuite;
+        return describe.apply(undefined, [title, function defineSuite() {
+          var _this = this;
 
-          self.state.currentlyDefinedSuite = this;
+          var previousDefinedSuite = tracker.state.currentlyDefinedSuite;
+
+          immediate(function () {
+            return tracker.linkMetadataOf(_this);
+          });
+          tracker.state.currentlyDefinedSuite = this;
 
           for (var _len2 = arguments.length, testArgs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
             testArgs[_key2] = arguments[_key2];
           }
 
-          self.track(defineTests, this, testArgs);
-          self.state.currentlyDefinedSuite = previousDefinedSuite;
+          tracker.track(defineTests, this, testArgs);
+          tracker.state.currentlyDefinedSuite = previousDefinedSuite;
         }].concat(args));
+      };
+    }
+  }, {
+    key: 'linkMetadataOf',
+    value: function linkMetadataOf(suite) {
+      var metadata$$2 = Metadata$2.of(suite);
+      var parentMetadata = Metadata$2.of(suite.parent);
+
+      if (!parentMetadata) {
+        return;
+      }
+
+      if (metadata$$2) {
+        parentMetadata.addChild(metadata$$2);
+      } else {
+        Metadata$2.setVirtual(suite, parentMetadata);
+      }
+    }
+  }, {
+    key: 'track',
+    value: function track(defineTests, suite, args) {
+      var _buildWatcherFor = this.buildWatcherFor(suite),
+          registerSuite = _buildWatcherFor.registerSuite,
+          cleanUp = _buildWatcherFor.cleanUp;
+
+      suite.beforeAll(registerSuite);
+      suite.beforeEach(registerSuite);
+      suite.afterEach(registerSuite);
+      suite.afterAll(registerSuite);
+      defineTests.apply(suite, args);
+
+      if (Metadata$2.of(suite)) {
+        suite.beforeAll(cleanUp);
+        suite.afterEach(cleanUp);
+        suite.afterAll(cleanUp);
+      }
+    }
+  }, {
+    key: 'buildWatcherFor',
+    value: function buildWatcherFor(suite) {
+      return {
+        registerSuite: this.registerSuite.bind(this, suite),
+        cleanUp: this.cleanUp.bind(this, suite),
+        cleanUpAndRestorePrev: this.cleanUpAndRestorePrev.bind(this, suite)
       };
     }
   }, {
@@ -489,7 +522,7 @@ var SuiteTracker = function () {
   }, {
     key: 'cleanUp',
     value: function cleanUp(context) {
-      var metadata$$2 = Metadata$2.ownBy(context);
+      var metadata$$2 = Metadata$2.of(context);
 
       if (metadata$$2) {
         metadata$$2.releaseVars();
@@ -502,28 +535,9 @@ var SuiteTracker = function () {
       return this.cleanUp(context);
     }
   }, {
-    key: 'track',
-    value: function track(defineTests, suite, args) {
-      var _watcher = this.watcher,
-          registerSuite = _watcher.registerSuite,
-          cleanUp = _watcher.cleanUp;
-      var _testInterface = this.testInterface,
-          setup = _testInterface.setup,
-          teardown = _testInterface.teardown,
-          setupSuite = _testInterface.setupSuite,
-          teardownSuite = _testInterface.teardownSuite;
-      // TODO: callbacks count may be decreased.
-      // In mocha.js it's possible to utilize reporter.suite || reporter.test
-      // and in jasmine.js jasmine.getEnv().currentSpec
-
-      setupSuite(registerSuite);
-      setup(registerSuite);
-      teardown(registerSuite);
-      teardownSuite(registerSuite);
-      defineTests.apply(suite, args);
-      setupSuite(cleanUp);
-      teardown(cleanUp);
-      teardownSuite(cleanUp);
+    key: 'currentContext',
+    get: function get$$1() {
+      return this.state.currentTestContext;
     }
   }, {
     key: 'currentlyDefinedSuite',
@@ -534,38 +548,16 @@ var SuiteTracker = function () {
   return SuiteTracker;
 }();
 
-function createTestInterface(options) {
-  var state = {};
-
-  return {
-    get setupSuite() {
-      return state.setupSuite = state.setupSuite || options.setupSuite || commonjsGlobal.before;
-    },
-
-    get teardownSuite() {
-      return state.teardownSuite = state.teardownSuite || options.teardownSuite || commonjsGlobal.after;
-    },
-
-    get setup() {
-      return state.setup = state.setup || options.setup || commonjsGlobal.beforeEach;
-    },
-
-    get teardown() {
-      return state.teardown = state.teardown || options.teardown || commonjsGlobal.afterEach;
-    }
-  };
-}
-
 var suite_tracker = SuiteTracker;
 
 function addInterface(rootSuite, options) {
-  var tracker = new options.Tracker(Object.assign({ rootSuite: rootSuite }, options.interface));
+  var tracker = new options.Tracker({ rootSuite: rootSuite });
 
   rootSuite.on('pre-require', function (context) {
     var ui = _interface(context, tracker, options);
     var describe = context.describe;
 
-    Object.assign(context, ui);
+    _extends(context, ui);
     context.describe = tracker.wrapSuite(describe);
     context.describe.skip = tracker.wrapSuite(describe.skip);
     context.describe.only = tracker.wrapSuite(describe.only);
@@ -576,7 +568,7 @@ function addInterface(rootSuite, options) {
 
 var mocha$1 = {
   createUi: function createUi(name, options) {
-    var config = Object.assign({
+    var config = _extends({
       Tracker: suite_tracker,
       inheritUi: 'bdd'
     }, options);
@@ -595,7 +587,7 @@ var prop = symbol.for;
 var LAZY_VARS_PROP_NAME = prop('__lazyVars');
 
 function defineGetter(context, varName, options) {
-  var params = Object.assign({
+  var params = _extends({
     getterPrefix: '',
     defineOn: context
   }, options);
@@ -615,7 +607,7 @@ function defineGetter(context, varName, options) {
   vars[accessorName] = true;
   Object.defineProperty(varContext, accessorName, {
     configurable: true,
-    get: function get() {
+    get: function get$$1() {
       return context.get(varName);
     }
   });
@@ -634,17 +626,16 @@ var RspecTracker = function (_SuiteTracker) {
   createClass(RspecTracker, [{
     key: 'track',
     value: function track(defineTests, suite, args) {
-      var _testInterface = this.testInterface,
-          setupSuite = _testInterface.setupSuite,
-          teardown = _testInterface.teardown,
-          teardownSuite = _testInterface.teardownSuite;
+      var _buildWatcherFor = this.buildWatcherFor(suite),
+          registerSuite = _buildWatcherFor.registerSuite,
+          cleanUp = _buildWatcherFor.cleanUp,
+          cleanUpAndRestorePrev = _buildWatcherFor.cleanUpAndRestorePrev;
 
-
-      setupSuite(this.watcher.registerSuite);
+      suite.beforeAll(registerSuite);
       defineTests.apply(suite, args);
-      setupSuite(this.watcher.cleanUp);
-      teardown(this.watcher.cleanUp);
-      teardownSuite(this.watcher.cleanUpAndRestorePrev);
+      suite.beforeAll(cleanUp);
+      suite.afterEach(cleanUp);
+      suite.afterAll(cleanUpAndRestorePrev);
     }
   }]);
   return RspecTracker;
