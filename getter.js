@@ -48,7 +48,7 @@ var createClass = function () {
   };
 }();
 
-var lazyVarsPropName = symbol.for('__lazyVars');
+var LAZY_VARS_FIELD = symbol.for('__lazyVars');
 
 var VariableMetadata = function () {
   function VariableMetadata(definition, thisContext) {
@@ -92,28 +92,26 @@ var VariableMetadata = function () {
 
 var lazyVar = {
   register: function register(context, name, definition, thisContext) {
-    var hasOwnVariable = context.hasOwnProperty(name) && context.hasOwnProperty(lazyVarsPropName);
+    var metadata = lazyVar.metadataFor(context);
 
-    if (hasOwnVariable && lazyVar.isDefined(context, name)) {
+    if (metadata.defs.hasOwnProperty(name)) {
       throw new Error('Cannot define "' + name + '" variable twice in the same suite.');
     }
 
-    var metadata = lazyVar.metadataFor(context);
     metadata.defs[name] = new VariableMetadata(definition, thisContext || context);
-
     lazyVar.defineProperty(context, name, metadata);
   },
   metadataFor: function metadataFor(context, varName) {
-    if (!context.hasOwnProperty(lazyVarsPropName)) {
-      var lazyVarsInPrototype = context[lazyVarsPropName] ? context[lazyVarsPropName].defs : null;
+    if (!context.hasOwnProperty(LAZY_VARS_FIELD)) {
+      var lazyVarsInPrototype = context[LAZY_VARS_FIELD] ? context[LAZY_VARS_FIELD].defs : Object.prototype;
 
-      context[lazyVarsPropName] = {
+      context[LAZY_VARS_FIELD] = {
         defs: Object.create(lazyVarsInPrototype),
         created: {}
       };
     }
 
-    var metadata = context[lazyVarsPropName];
+    var metadata = context[LAZY_VARS_FIELD];
 
     return varName ? metadata.defs[varName] : metadata;
   },
@@ -145,13 +143,13 @@ var lazyVar = {
     });
   },
   isDefined: function isDefined(context, name) {
-    var hasLazyVars = context && context[lazyVarsPropName];
+    var hasLazyVars = context && context[LAZY_VARS_FIELD];
 
-    return !!(hasLazyVars && context[lazyVarsPropName].defs[name]);
+    return !!(hasLazyVars && context[LAZY_VARS_FIELD].defs[name]);
   },
   cleanUp: function cleanUp(context) {
-    if (context.hasOwnProperty(lazyVarsPropName)) {
-      context[lazyVarsPropName].created = {};
+    if (context.hasOwnProperty(LAZY_VARS_FIELD)) {
+      context[LAZY_VARS_FIELD].created = {};
     }
   }
 };
