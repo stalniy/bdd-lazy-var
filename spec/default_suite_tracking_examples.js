@@ -8,15 +8,15 @@ sharedExamplesFor('Default suite tracking', function(getVar) {
       expect(getVar('currentIndex')).to.equal(currentIndex);
     });
 
-    beforeEach('uses own defined variable in "beforeEach" callback even when it is run for nested tests', function() {
+    beforeEach(function usesOwnDefinedVariableInBeforeEachCallbackEvenWhenItIsRunForNestedTests() {
       expect(getVar('currentIndex')).to.equal(currentIndex);
     });
 
-    afterEach('uses own defined variable in "afterEach" callback even when it is run for nested tests', function() {
+    afterEach(function usesOwnDefinedVariableInAfterEachCallbackEvenWhenItIsRunForNestedTests() {
       expect(getVar('currentIndex')).to.equal(currentIndex);
     });
 
-    after('uses own defined variable', function() {
+    after(function usesOwnDefinedVariable() {
       expect(getVar('currentIndex')).to.equal(currentIndex);
     });
 
@@ -44,15 +44,15 @@ sharedExamplesFor('Default suite tracking', function(getVar) {
         expect(getVar('currentIndex')).to.equal(currentIndex.toString());
       });
 
-      beforeEach('uses own defined variable in "beforeEach" callback even when it is run for nested tests', function() {
+      beforeEach(function usesOwnDefinedVariableInBeforeEachCallbackEvenWhenItIsRunForNestedTests() {
         expect(getVar('currentIndex')).to.equal(currentIndex.toString());
       });
 
-      afterEach('uses own defined variable in "afterEach" callback even when it is run for nested tests', function() {
+      afterEach(function usesOwnDefinedVariableInAfterEachCallbackEvenWhenItIsRunForNestedTests() {
         expect(getVar('currentIndex')).to.equal(currentIndex.toString());
       });
 
-      after('uses own defined variable', function() {
+      after(function usesOwnDefinedVariable() {
         expect(getVar('currentIndex')).to.equal(currentIndex.toString());
       });
 

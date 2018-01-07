@@ -3,12 +3,12 @@ import commonjs from 'rollup-plugin-commonjs';
 
 export default {
   external: ['mocha'],
-  input: `lib/interface/${process.env.SRC_FILE}`,
+  input: `lib/interface/dialects/${process.env.SRC_FILE}`,
   output: {
     format: 'umd',
     name: 'bdd_lazy_var',
     globals: {
-      mocha: 'Mocha'
+      mocha: 'Mocha',
     },
     file: process.env.DEST_FILE,
   },

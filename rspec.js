@@ -357,7 +357,7 @@ Variable.EMPTY = new Variable(null, null);
 
 var variable = Variable;
 
-var _interface = createCommonjsModule(function (module) {
+var _interface$2 = createCommonjsModule(function (module) {
   var Metadata = metadata.Metadata;
 
 
@@ -438,6 +438,7 @@ var SuiteTracker = function () {
     classCallCheck(this, SuiteTracker);
 
     this.state = { currentlyDefinedSuite: config.rootSuite };
+    this.suiteInterface = config.suiteInterface;
   }
 
   createClass(SuiteTracker, [{
@@ -473,7 +474,7 @@ var SuiteTracker = function () {
     key: 'linkMetadataOf',
     value: function linkMetadataOf(suite) {
       var metadata$$2 = Metadata$2.of(suite);
-      var parentMetadata = Metadata$2.of(suite.parent);
+      var parentMetadata = Metadata$2.of(suite.parent || suite.parentSuite);
 
       if (!parentMetadata) {
         return;
@@ -492,17 +493,24 @@ var SuiteTracker = function () {
           registerSuite = _buildWatcherFor.registerSuite,
           cleanUp = _buildWatcherFor.cleanUp;
 
-      suite.beforeAll(registerSuite);
-      suite.beforeEach(registerSuite);
-      suite.afterEach(registerSuite);
-      suite.afterAll(registerSuite);
+      var ui = this.getSuiteInterface(suite);
+
+      ui.beforeAll(registerSuite);
+      ui.beforeEach(registerSuite);
+      ui.afterEach(registerSuite);
+      ui.afterAll(registerSuite);
       defineTests.apply(suite, args);
 
       if (Metadata$2.of(suite)) {
-        suite.beforeAll(cleanUp);
-        suite.afterEach(cleanUp);
-        suite.afterAll(cleanUp);
+        ui.beforeAll(cleanUp);
+        ui.afterEach(cleanUp);
+        ui.afterAll(cleanUp);
       }
+    }
+  }, {
+    key: 'getSuiteInterface',
+    value: function getSuiteInterface(suite) {
+      return typeof this.suiteInterface === 'function' ? this.suiteInterface(suite) : suite;
     }
   }, {
     key: 'buildWatcherFor',
@@ -554,7 +562,7 @@ function addInterface(rootSuite, options) {
   var tracker = new options.Tracker({ rootSuite: rootSuite });
 
   rootSuite.on('pre-require', function (context) {
-    var ui = _interface(context, tracker, options);
+    var ui = _interface$2(context, tracker, options);
     var describe = context.describe;
 
     _extends(context, ui);
@@ -581,6 +589,8 @@ var mocha$1 = {
     return mocha.interfaces[name];
   }
 };
+
+var _interface = mocha$1;
 
 var prop = symbol.for;
 
@@ -643,7 +653,7 @@ var RspecTracker = function (_SuiteTracker) {
 
 var rspec$2 = RspecTracker;
 
-var rspec = mocha$1.createUi('bdd-lazy-var/rspec', {
+var rspec = _interface.createUi('bdd-lazy-var/rspec', {
   Tracker: rspec$2,
   onDefineVariable: function onDefineVariable(suite, varName, context) {
     define_var(context, varName, { getterPrefix: '$' });

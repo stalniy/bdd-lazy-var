@@ -69,13 +69,13 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
       }
     });
 
-    afterEach('uses cached variable', function() {
+    afterEach(function usesCachedVariable() {
       valueInAfterEach = getVar('var');
 
       expect(getVar('var')).to.equal(prevValue + 1);
     });
 
-    after('uses newly created variable', function() {
+    after(function usesNewlyCreatedVariable() {
       expect(getVar('var')).to.equal(valueInAfterEach + 1);
     });
 
@@ -193,7 +193,7 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
   describe('variables in skipped suite', function() {
     subject([]);
 
-    describe.skip('Skipped suite', function() {
+    xdescribe('Skipped suite', function() {
       var object = {};
 
       subject(object);

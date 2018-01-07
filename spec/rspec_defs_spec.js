@@ -14,15 +14,15 @@ describe('Interface with rspec suite tracker and globally defined vars', functio
       expect(getVar('currentIndex')).to.equal(currentIndex);
     });
 
-    beforeEach('uses variable defined in currently running suite in "beforeEach" callback', function() {
+    beforeEach(function usesVariableDefinedInCurrentlyRunningSuiteInBeforeEachCallback() {
       expect(cast(getVar('currentIndex'))).to.equal(cast(currentIndex));
     });
 
-    afterEach('uses variable defined in currently running suite in "afterEach" callback', function() {
+    afterEach(function usesVariableDefinedInCurrentlyRunningSuiteInAfterEachCallback() {
       expect(cast(getVar('currentIndex'))).to.equal(cast(currentIndex));
     });
 
-    after('uses own defined variable', function() {
+    after(function usesOwnDefinedVariable() {
       expect(getVar('currentIndex')).to.equal(currentIndex);
     });
 
@@ -54,15 +54,15 @@ describe('Interface with rspec suite tracker and globally defined vars', functio
         expect(getVar('currentIndex')).to.equal(cast(currentIndex));
       });
 
-      beforeEach('uses own defined variable in "beforeEach" callback even when it is run for nested tests', function() {
+      beforeEach(function usesOwnDefinedVariableInBeforeEachCallbackEvenWhenItIsRunForNestedTests() {
         expect(getVar('currentIndex')).to.equal(cast(currentIndex));
       });
 
-      afterEach('uses own defined variable in "afterEach" callback even when it is run for nested tests', function() {
+      afterEach(function usesOwnDefinedVariableInAfterEachCallbackEvenWhenItIsRunForNestedTests() {
         expect(getVar('currentIndex')).to.equal(cast(currentIndex));
       });
 
-      after('uses own defined variable', function() {
+      after(function usesOwnDefinedVariable() {
         expect(getVar('currentIndex')).to.equal(cast(currentIndex));
       });
 
