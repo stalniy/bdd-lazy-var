@@ -67,6 +67,50 @@ var defineProperty = function (obj, key, value) {
   return obj;
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var toConsumableArray = function (arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  } else {
+    return Array.from(arr);
+  }
+};
+
 var LAZY_VARS_FIELD = symbol.for('__lazyVars');
 
 var VariableMetadata = function () {
@@ -89,11 +133,44 @@ var VariableMetadata = function () {
     value: function isNamedAs(name) {
       return this.names[name];
     }
+  }, {
+    key: 'evaluate',
+    value: function evaluate() {
+      var value = this.value;
+
+      return typeof value === 'function' ? value() : value;
+    }
   }]);
   return VariableMetadata;
 }();
 
 var Metadata = function () {
+  createClass(Metadata, null, [{
+    key: 'of',
+    value: function of(context, varName) {
+      var metadata = context[LAZY_VARS_FIELD];
+
+      return varName && metadata ? metadata.defs[varName] : metadata;
+    }
+  }, {
+    key: 'ensureDefinedOn',
+    value: function ensureDefinedOn(context) {
+      if (!context.hasOwnProperty(LAZY_VARS_FIELD)) {
+        var lazyVarsInPrototype = context[LAZY_VARS_FIELD];
+        context[LAZY_VARS_FIELD] = lazyVarsInPrototype ? lazyVarsInPrototype.addChild(context) : new Metadata(context);
+      }
+
+      return context[LAZY_VARS_FIELD];
+    }
+  }, {
+    key: 'ownBy',
+    value: function ownBy(context) {
+      if (context.hasOwnProperty(LAZY_VARS_FIELD)) {
+        return Metadata.of(context);
+      }
+    }
+  }]);
+
   function Metadata(context) {
     classCallCheck(this, Metadata);
 
@@ -106,18 +183,10 @@ var Metadata = function () {
     key: 'getVar',
     value: function getVar(name) {
       if (!this.created.hasOwnProperty(name)) {
-        this.created[name] = this.evaluateVar(name);
+        this.created[name] = this.defs[name].evaluate();
       }
 
       return this.created[name];
-    }
-  }, {
-    key: 'evaluateVar',
-    value: function evaluateVar(name) {
-      var definition = this.defs[name];
-      var value = definition.value;
-
-      return typeof value === 'function' ? value() : value;
     }
   }, {
     key: 'addChild',
@@ -128,6 +197,21 @@ var Metadata = function () {
       return child;
     }
   }, {
+    key: 'addVar',
+    value: function addVar(name, definition) {
+      if (this.defs.hasOwnProperty(name)) {
+        throw new Error('Cannot define "' + name + '" variable twice in the same suite.');
+      }
+
+      this.defs[name] = new VariableMetadata(name, definition);
+      return this;
+    }
+  }, {
+    key: 'addAliasFor',
+    value: function addAliasFor(name, aliasName) {
+      this.defs[aliasName] = this.defs[name].addName(aliasName);
+    }
+  }, {
     key: 'releaseVars',
     value: function releaseVars() {
       this.created = {};
@@ -136,49 +220,10 @@ var Metadata = function () {
   return Metadata;
 }();
 
-var lazyVar = {
-  register: function register(context, name, definition) {
-    var metadata = lazyVar.metadataFor(context);
+var lazy_var = { Metadata: Metadata };
 
-    if (metadata.defs.hasOwnProperty(name)) {
-      throw new Error('Cannot define "' + name + '" variable twice in the same suite.');
-    }
+var Metadata$1 = lazy_var.Metadata;
 
-    metadata.defs[name] = new VariableMetadata(name, definition);
-  },
-  metadataFor: function metadataFor(context, varName) {
-    if (!context.hasOwnProperty(LAZY_VARS_FIELD)) {
-      var lazyVarsInPrototype = context[LAZY_VARS_FIELD];
-      context[LAZY_VARS_FIELD] = lazyVarsInPrototype ? lazyVarsInPrototype.addChild(context) : new Metadata(context);
-    }
-
-    var metadata = context[LAZY_VARS_FIELD];
-
-    return varName ? metadata.defs[varName] : metadata;
-  },
-  getMetadataFor: function getMetadataFor(context, name) {
-    var metadata = context[LAZY_VARS_FIELD];
-
-    return name && metadata ? metadata.defs[name] : metadata;
-  },
-  registerAlias: function registerAlias(context, varName, aliasName) {
-    var metadata = lazyVar.metadataFor(context);
-
-    metadata.defs[aliasName] = metadata.defs[varName].addName(aliasName);
-  },
-  isDefined: function isDefined(context, name) {
-    var hasLazyVars = context && context[LAZY_VARS_FIELD];
-
-    return !!(hasLazyVars && context[LAZY_VARS_FIELD].defs[name]);
-  },
-  cleanUp: function cleanUp(context) {
-    if (context.hasOwnProperty(LAZY_VARS_FIELD)) {
-      context[LAZY_VARS_FIELD].releaseVars();
-    }
-  }
-};
-
-var lazy_var = lazyVar;
 
 var CURRENTLY_RETRIEVED_VAR_FIELD = symbol.for('__currentVariableStack');
 var last = function last(array) {
@@ -227,12 +272,12 @@ var Variable = function () {
   createClass(Variable, [{
     key: 'isSame',
     value: function isSame(anotherVarName) {
-      return this.name && (this.name === anotherVarName || lazy_var.metadataFor(this.ownContext, this.name).isNamedAs(anotherVarName));
+      return this.name && (this.name === anotherVarName || Metadata$1.of(this.ownContext, this.name).isNamedAs(anotherVarName));
     }
   }, {
     key: 'value',
     value: function value() {
-      return lazy_var.getMetadataFor(this.context).getVar(this.name);
+      return Metadata$1.of(this.context).getVar(this.name);
     }
   }, {
     key: 'addToStack',
@@ -254,7 +299,7 @@ var Variable = function () {
 
       try {
         this.context = this.getParentContextFor(varOrAliasName);
-        return lazy_var.getMetadataFor(this.context).getVar(varOrAliasName);
+        return Metadata$1.of(this.context).getVar(varOrAliasName);
       } finally {
         this.context = prevContext;
       }
@@ -262,7 +307,7 @@ var Variable = function () {
   }, {
     key: 'getParentContextFor',
     value: function getParentContextFor(varName) {
-      var metadata = lazy_var.getMetadataFor(this.context, varName);
+      var metadata = Metadata$1.of(this.context, varName);
 
       if (!metadata || !metadata.parent) {
         throw new Error('Unknown parent variable "' + varName + '".');
@@ -279,13 +324,16 @@ Variable.EMPTY = new Variable(null, null);
 var variable = Variable;
 
 var _interface = createCommonjsModule(function (module) {
+  var Metadata = lazy_var.Metadata;
+
+
   module.exports = function (context, tracker, options) {
-    function get(varName) {
+    function get$$1(varName) {
       return variable.evaluate(varName, { in: tracker.currentContext() });
     }
 
-    get.definitionOf = get.variable = function (varName) {
-      return get.bind(null, varName);
+    get$$1.definitionOf = get$$1.variable = function (varName) {
+      return get$$1.bind(null, varName);
     };
 
     function def(varName, definition) {
@@ -295,8 +343,9 @@ var _interface = createCommonjsModule(function (module) {
         def(varName[0], definition);
         defineAliasesFor(suite, varName[0], varName.slice(1));
       } else {
-        lazy_var.register(suite.ctx, varName, definition, tracker.currentContext);
+        Metadata.ensureDefinedOn(suite.ctx).addVar(varName, definition);
         detectParentDeclarationFor(suite, varName);
+        runHook('onDefineVariable', suite, varName);
       }
     }
 
@@ -317,29 +366,41 @@ var _interface = createCommonjsModule(function (module) {
         return def([name, 'subject'], definition);
       }
 
-      return get('subject');
+      return get$$1('subject');
+    }
+
+    function runHook(name) {
+      if (typeof options[name] === 'function') {
+        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+          args[_key2 - 1] = arguments[_key2];
+        }
+
+        options[name].apply(options, toConsumableArray(args.concat(context)));
+      }
     }
 
     function detectParentDeclarationFor(suite, varName) {
-      if (suite.parent && lazy_var.isDefined(suite.parent.ctx, varName)) {
-        lazy_var.metadataFor(suite.ctx, varName).parent = suite.parent.ctx;
-      }
+      var parentVarMetadata = suite.parent ? Metadata.of(suite.parent.ctx, varName) : null;
 
-      if (typeof options.onDefineVariable === 'function') {
-        options.onDefineVariable(suite, varName, context);
+      if (parentVarMetadata) {
+        Metadata.of(suite.ctx, varName).parent = suite.parent.ctx;
       }
     }
 
     function defineAliasesFor(suite, varName, aliases) {
+      var metadata = Metadata.of(suite.ctx);
       aliases.forEach(function (alias) {
-        lazy_var.registerAlias(suite.ctx, varName, alias);
+        metadata.addAliasFor(varName, alias);
         detectParentDeclarationFor(suite, alias);
+        runHook('onDefineVariable', suite, alias);
       });
     }
 
-    return { subject: subject, def: def, get: get };
+    return { subject: subject, def: def, get: get$$1 };
   };
 });
+
+var Metadata$2 = lazy_var.Metadata;
 
 var SuiteTracker = function () {
   function SuiteTracker() {
@@ -350,7 +411,6 @@ var SuiteTracker = function () {
     this.currentContext = this.currentContext.bind(this);
     this.watcher = this.buildWatcher();
     this.testInterface = createTestInterface(config);
-    this.cleanUp = lazy_var.cleanUp;
   }
 
   createClass(SuiteTracker, [{
@@ -404,6 +464,15 @@ var SuiteTracker = function () {
     value: function registerSuite(context) {
       this.state.prevTestContext = this.state.currentTestContext || null;
       this.state.currentTestContext = context;
+    }
+  }, {
+    key: 'cleanUp',
+    value: function cleanUp(context) {
+      var metadata = Metadata$2.ownBy(context);
+
+      if (metadata) {
+        metadata.releaseVars();
+      }
     }
   }, {
     key: 'cleanUpAndRestorePrev',
