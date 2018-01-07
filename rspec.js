@@ -240,9 +240,9 @@ var Metadata = function () {
   return Metadata;
 }();
 
-var lazy_var = { Metadata: Metadata };
+var metadata = { Metadata: Metadata };
 
-var Metadata$1 = lazy_var.Metadata;
+var Metadata$1 = metadata.Metadata;
 
 
 var CURRENTLY_RETRIEVED_VAR_FIELD = symbol.for('__currentVariableStack');
@@ -327,13 +327,13 @@ var Variable = function () {
   }, {
     key: 'getParentContextFor',
     value: function getParentContextFor(varName) {
-      var metadata = Metadata$1.of(this.context, varName);
+      var metadata$$1 = Metadata$1.of(this.context, varName);
 
-      if (!metadata || !metadata.parent) {
+      if (!metadata$$1 || !metadata$$1.parent) {
         throw new Error('Unknown parent variable "' + varName + '".');
       }
 
-      return metadata.parent;
+      return metadata$$1.parent;
     }
   }]);
   return Variable;
@@ -344,7 +344,7 @@ Variable.EMPTY = new Variable(null, null);
 var variable = Variable;
 
 var _interface = createCommonjsModule(function (module) {
-  var Metadata = lazy_var.Metadata;
+  var Metadata = metadata.Metadata;
 
 
   module.exports = function (context, tracker, options) {
@@ -408,9 +408,10 @@ var _interface = createCommonjsModule(function (module) {
     }
 
     function defineAliasesFor(suite, varName, aliases) {
-      var metadata = Metadata.of(suite.ctx);
+      var metadata$$1 = Metadata.of(suite.ctx);
+
       aliases.forEach(function (alias) {
-        metadata.addAliasFor(varName, alias);
+        metadata$$1.addAliasFor(varName, alias);
         detectParentDeclarationFor(suite, alias);
         runHook('onDefineVariable', suite, alias);
       });
@@ -420,7 +421,7 @@ var _interface = createCommonjsModule(function (module) {
   };
 });
 
-var Metadata$2 = lazy_var.Metadata;
+var Metadata$2 = metadata.Metadata;
 
 var SuiteTracker = function () {
   function SuiteTracker() {
@@ -488,10 +489,10 @@ var SuiteTracker = function () {
   }, {
     key: 'cleanUp',
     value: function cleanUp(context) {
-      var metadata = Metadata$2.ownBy(context);
+      var metadata$$2 = Metadata$2.ownBy(context);
 
-      if (metadata) {
-        metadata.releaseVars();
+      if (metadata$$2) {
+        metadata$$2.releaseVars();
       }
     }
   }, {
