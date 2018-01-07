@@ -7,7 +7,7 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
     def('staticVar', value);
 
     def('fullName', function() {
-      return this.firstName + ' ' + this.lastName;
+      return getVar('firstName') + ' ' + getVar('lastName');
     });
 
     def('firstName', 'John');
@@ -39,19 +39,11 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
       expect(getStatic()).to.equal(getVar('staticVar'));
     });
 
-    it('allows to access variable using "this" keyword (i.e. "this.lazyVarName")', function() {
-      expect(this.staticVar).to.equal(getVar('staticVar'));
-    });
-
-    it('allows to access other variables inside definition using "this"', function() {
-      expect(this.fullName).to.equal('John Doe');
-    });
-
     describe('nested suite', function() {
       def('lastName', 'Smith');
 
       it('uses suite specific variable inside dynamic parent variable', function() {
-        expect(this.fullName).to.equal('John Smith');
+        expect(getVar('fullName')).to.equal('John Smith');
       });
     });
   });

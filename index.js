@@ -48,89 +48,123 @@ var createClass = function () {
   };
 }();
 
+
+
+
+
+var defineProperty = function (obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+};
+
 var LAZY_VARS_FIELD = symbol.for('__lazyVars');
 
 var VariableMetadata = function () {
-  function VariableMetadata(definition, thisContext) {
+  function VariableMetadata(name, definition) {
     classCallCheck(this, VariableMetadata);
 
     this.value = definition;
     this.parent = null;
-    this.aliases = null;
-
-    if (typeof thisContext === 'function') {
-      Object.defineProperty(this, 'context', { get: thisContext });
-    } else {
-      this.context = thisContext;
-    }
+    this.names = defineProperty({}, name, true);
   }
 
   createClass(VariableMetadata, [{
     key: 'addName',
     value: function addName(name) {
-      this.aliases = this.aliases || {};
-      this.aliases[name] = true;
+      this.names[name] = true;
       return this;
     }
   }, {
     key: 'isNamedAs',
     value: function isNamedAs(name) {
-      return this.aliases && this.aliases[name];
+      return this.names[name];
     }
   }]);
   return VariableMetadata;
 }();
 
+var Metadata = function () {
+  function Metadata(context) {
+    classCallCheck(this, Metadata);
+
+    this.context = context;
+    this.defs = {};
+    this.created = {};
+  }
+
+  createClass(Metadata, [{
+    key: 'getVar',
+    value: function getVar(name) {
+      if (!this.created.hasOwnProperty(name)) {
+        this.created[name] = this.evaluateVar(name);
+      }
+
+      return this.created[name];
+    }
+  }, {
+    key: 'evaluateVar',
+    value: function evaluateVar(name) {
+      var definition = this.defs[name];
+      var value = definition.value;
+
+      return typeof value === 'function' ? value() : value;
+    }
+  }, {
+    key: 'addChild',
+    value: function addChild(context) {
+      var child = new Metadata(context);
+      child.defs = Object.create(this.defs);
+
+      return child;
+    }
+  }, {
+    key: 'releaseVars',
+    value: function releaseVars() {
+      this.created = {};
+    }
+  }]);
+  return Metadata;
+}();
+
 var lazyVar = {
-  register: function register(context, name, definition, thisContext) {
+  register: function register(context, name, definition) {
     var metadata = lazyVar.metadataFor(context);
 
     if (metadata.defs.hasOwnProperty(name)) {
       throw new Error('Cannot define "' + name + '" variable twice in the same suite.');
     }
 
-    metadata.defs[name] = new VariableMetadata(definition, thisContext || context).addName(name);
-    lazyVar.defineProperty(context, name, metadata);
+    metadata.defs[name] = new VariableMetadata(name, definition);
   },
   metadataFor: function metadataFor(context, varName) {
     if (!context.hasOwnProperty(LAZY_VARS_FIELD)) {
-      var lazyVarsInPrototype = context[LAZY_VARS_FIELD] ? context[LAZY_VARS_FIELD].defs : Object.prototype;
-
-      context[LAZY_VARS_FIELD] = {
-        defs: Object.create(lazyVarsInPrototype),
-        created: {}
-      };
+      var lazyVarsInPrototype = context[LAZY_VARS_FIELD];
+      context[LAZY_VARS_FIELD] = lazyVarsInPrototype ? lazyVarsInPrototype.addChild(context) : new Metadata(context);
     }
 
     var metadata = context[LAZY_VARS_FIELD];
 
     return varName ? metadata.defs[varName] : metadata;
   },
-  defineProperty: function defineProperty$$1(context, name, metadata) {
-    Object.defineProperty(context, name, {
-      configurable: true,
+  getMetadataFor: function getMetadataFor(context, name) {
+    var metadata = context[LAZY_VARS_FIELD];
 
-      get: function get$$1() {
-        if (!metadata.created.hasOwnProperty(name)) {
-          var definition = metadata.defs[name];
-          var value = definition.value;
-
-          metadata.created[name] = typeof value === 'function' ? value.call(definition.context) : value;
-        }
-
-        return metadata.created[name];
-      }
-    });
+    return name && metadata ? metadata.defs[name] : metadata;
   },
   registerAlias: function registerAlias(context, varName, aliasName) {
     var metadata = lazyVar.metadataFor(context);
 
     metadata.defs[aliasName] = metadata.defs[varName].addName(aliasName);
-    Object.defineProperty(context, aliasName, {
-      get: function get$$1() {
-        return this[varName];
-      }
-    });
   },
   isDefined: function isDefined(context, name) {
     var hasLazyVars = context && context[LAZY_VARS_FIELD];
@@ -139,7 +173,7 @@ var lazyVar = {
   },
   cleanUp: function cleanUp(context) {
     if (context.hasOwnProperty(LAZY_VARS_FIELD)) {
-      context[LAZY_VARS_FIELD].created = {};
+      context[LAZY_VARS_FIELD].releaseVars();
     }
   }
 };
@@ -198,7 +232,7 @@ var Variable = function () {
   }, {
     key: 'value',
     value: function value() {
-      return this.context[this.name];
+      return lazy_var.getMetadataFor(this.context).getVar(this.name);
     }
   }, {
     key: 'addToStack',
@@ -220,7 +254,7 @@ var Variable = function () {
 
       try {
         this.context = this.getParentContextFor(varOrAliasName);
-        return this.context[varOrAliasName];
+        return lazy_var.getMetadataFor(this.context).getVar(varOrAliasName);
       } finally {
         this.context = prevContext;
       }
@@ -228,7 +262,7 @@ var Variable = function () {
   }, {
     key: 'getParentContextFor',
     value: function getParentContextFor(varName) {
-      var metadata = lazy_var.metadataFor(this.context, varName);
+      var metadata = lazy_var.getMetadataFor(this.context, varName);
 
       if (!metadata || !metadata.parent) {
         throw new Error('Unknown parent variable "' + varName + '".');

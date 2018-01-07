@@ -32,13 +32,15 @@ describe('Lazy vars defined as getter on "get" function', function() {
       expect(get.subject).to.equal(subject());
     });
 
-    it('forwards calls to test getter when access variable', function() {
+    it('forwards calls to `get` function when access variable', function() {
       var accessor = spy();
+      var originalGet = global.get;
 
-      Object.defineProperty(this, 'anotherVar', { configurable: true, get: accessor });
-      get.anotherVar;
+      global.get = accessor;
+      originalGet.anotherVar;
+      global.get = originalGet;
 
-      expect(accessor).to.have.been.called();
+      expect(accessor).to.have.been.called.with('anotherVar');
     });
 
     it('does not allow to redefine existing variable in global context', function() {
