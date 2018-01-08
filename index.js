@@ -1,10 +1,17 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('mocha')) :
-	typeof define === 'function' && define.amd ? define(['mocha'], factory) :
-	(global.bdd_lazy_var = factory(global.Mocha));
+function optional(name) { try { return require(name) } catch(e) {} }
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(optional("mocha")) :
+	typeof define === 'function' && define.amd ? define(['optional!mocha'], factory) :
+	(factory(global.Mocha));
 }(this, (function (mocha) { 'use strict';
 
 mocha = mocha && mocha.hasOwnProperty('default') ? mocha['default'] : mocha;
+
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+
+
+
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
@@ -291,6 +298,7 @@ var Variable = function () {
   }, {
     key: 'value',
     value: function value() {
+      // console.log('<-------', this.context.result.description)
       return Metadata$1.of(this.context).getVar(this.name);
     }
   }, {
@@ -407,48 +415,94 @@ var _interface$2 = createCommonjsModule(function (module) {
 
 var Metadata$2 = metadata.Metadata;
 
-
-var immediate = typeof setImmediate === 'function' ? setImmediate : function (callback) {
-  return setTimeout(callback, 0);
-};
-
 var SuiteTracker = function () {
   function SuiteTracker() {
     var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     classCallCheck(this, SuiteTracker);
 
     this.state = { currentlyDefinedSuite: config.rootSuite };
-    this.suiteInterface = config.suiteInterface;
+    this.suiteTracker = config.suiteTracker || this.createSuiteTracker();
+    this.suites = [];
   }
 
   createClass(SuiteTracker, [{
+    key: 'createSuiteTracker',
+    value: function createSuiteTracker() {
+      return {
+        before: function before(tracker, suite) {
+          suite.beforeAll(tracker.registerSuite);
+        },
+        after: function after(tracker, suite) {
+          suite.beforeAll(tracker.cleanUp);
+          suite.afterEach(tracker.cleanUp);
+          suite.afterAll(tracker.cleanUpAndRestorePrev);
+        }
+      };
+    }
+  }, {
     key: 'wrapSuite',
     value: function wrapSuite(describe) {
       var tracker = this;
 
       return function detectSuite(title, defineTests) {
-        for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-          args[_key - 2] = arguments[_key];
+        for (var _len = arguments.length, suiteArgs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+          suiteArgs[_key - 2] = arguments[_key];
         }
 
         return describe.apply(undefined, [title, function defineSuite() {
-          var _this = this;
-
-          var previousDefinedSuite = tracker.state.currentlyDefinedSuite;
-
-          immediate(function () {
-            return tracker.linkMetadataOf(_this);
-          });
-          tracker.state.currentlyDefinedSuite = this;
-
-          for (var _len2 = arguments.length, testArgs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-            testArgs[_key2] = arguments[_key2];
+          for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+            args[_key2] = arguments[_key2];
           }
 
-          tracker.track(defineTests, this, testArgs);
-          tracker.state.currentlyDefinedSuite = previousDefinedSuite;
-        }].concat(args));
+          tracker.trackSuite(this, defineTests, args);
+        }].concat(suiteArgs));
       };
+    }
+  }, {
+    key: 'trackSuite',
+    value: function trackSuite(suite, defineTests, args) {
+      var previousDefinedSuite = this.state.currentlyDefinedSuite;
+
+      this.state.currentlyDefinedSuite = suite;
+      this.execute(defineTests, suite, args);
+      this.state.currentlyDefinedSuite = previousDefinedSuite;
+      this.suites.push(suite);
+
+      if (this.isRoot(suite)) {
+        this.linkParentToChildMetadataAndFlush();
+      }
+    }
+  }, {
+    key: 'execute',
+    value: function execute(defineTests, suite, args) {
+      var tracker = this.buildRuntimeTrackerFor(suite);
+
+      this.suiteTracker.before(tracker, suite);
+      defineTests.apply(suite, args);
+
+      if (Metadata$2.of(suite)) {
+        this.suiteTracker.after(tracker, suite);
+      }
+    }
+  }, {
+    key: 'buildRuntimeTrackerFor',
+    value: function buildRuntimeTrackerFor(suite) {
+      return {
+        registerSuite: this.registerSuite.bind(this, suite),
+        cleanUp: this.cleanUp.bind(this, suite),
+        cleanUpAndRestorePrev: this.cleanUpAndRestorePrev.bind(this, suite)
+      };
+    }
+  }, {
+    key: 'isRoot',
+    value: function isRoot(suite) {
+      return !(suite.parent ? suite.parent.parent : suite.parentSuite.parentSuite);
+    }
+  }, {
+    key: 'linkParentToChildMetadataAndFlush',
+    value: function linkParentToChildMetadataAndFlush() {
+      this.suites.reverse().forEach(this.linkMetadataOf, this);
+      this.suites.length = 0;
     }
   }, {
     key: 'linkMetadataOf',
@@ -465,41 +519,6 @@ var SuiteTracker = function () {
       } else {
         Metadata$2.setVirtual(suite, parentMetadata);
       }
-    }
-  }, {
-    key: 'track',
-    value: function track(defineTests, suite, args) {
-      var _buildWatcherFor = this.buildWatcherFor(suite),
-          registerSuite = _buildWatcherFor.registerSuite,
-          cleanUp = _buildWatcherFor.cleanUp;
-
-      var ui = this.getSuiteInterface(suite);
-
-      ui.beforeAll(registerSuite);
-      ui.beforeEach(registerSuite);
-      ui.afterEach(registerSuite);
-      ui.afterAll(registerSuite);
-      defineTests.apply(suite, args);
-
-      if (Metadata$2.of(suite)) {
-        ui.beforeAll(cleanUp);
-        ui.afterEach(cleanUp);
-        ui.afterAll(cleanUp);
-      }
-    }
-  }, {
-    key: 'getSuiteInterface',
-    value: function getSuiteInterface(suite) {
-      return typeof this.suiteInterface === 'function' ? this.suiteInterface(suite) : suite;
-    }
-  }, {
-    key: 'buildWatcherFor',
-    value: function buildWatcherFor(suite) {
-      return {
-        registerSuite: this.registerSuite.bind(this, suite),
-        cleanUp: this.cleanUp.bind(this, suite),
-        cleanUpAndRestorePrev: this.cleanUpAndRestorePrev.bind(this, suite)
-      };
     }
   }, {
     key: 'registerSuite',
@@ -538,7 +557,41 @@ var SuiteTracker = function () {
 
 var suite_tracker = SuiteTracker;
 
+function createSuiteTracker() {
+  return {
+    before: function before(tracker) {
+      commonjsGlobal.beforeAll(tracker.registerSuite);
+      commonjsGlobal.afterEach(tracker.cleanUp);
+      commonjsGlobal.afterAll(tracker.cleanUpAndRestorePrev);
+    },
+    after: function after(tracker) {
+      commonjsGlobal.beforeAll(tracker.cleanUp);
+    }
+  };
+}
+
 function addInterface(rootSuite, options) {
+  var context = commonjsGlobal;
+  var tracker = new options.Tracker({ rootSuite: rootSuite, suiteTracker: createSuiteTracker() });
+  var ui = _interface$2(context, tracker, options);
+
+  _extends(context, ui);
+  context.describe = tracker.wrapSuite(context.describe);
+  context.xdescribe = tracker.wrapSuite(context.xdescribe);
+  context.fdescribe = tracker.wrapSuite(context.fdescribe);
+}
+
+var jasmine = {
+  createUi: function createUi(name, options) {
+    var config = _extends({
+      Tracker: suite_tracker
+    }, options);
+
+    addInterface(commonjsGlobal.jasmine.getEnv().topSuite(), config);
+  }
+};
+
+function addInterface$1(rootSuite, options) {
   var tracker = new options.Tracker({ rootSuite: rootSuite });
 
   rootSuite.on('pre-require', function (context) {
@@ -563,14 +616,32 @@ var mocha$1 = {
 
     mocha.interfaces[name] = function (rootSuite) {
       mocha.interfaces[config.inheritUi](rootSuite);
-      return addInterface(rootSuite, config);
+      return addInterface$1(rootSuite, config);
     };
 
     return mocha.interfaces[name];
   }
 };
 
-var _interface = mocha$1;
+var Mocha = void 0;
+
+try {
+  Mocha = mocha;
+} catch (e) {}
+
+var ui = void 0;
+
+if (commonjsGlobal.jasmine) {
+  ui = jasmine;
+} else if (Mocha) {
+  ui = mocha$1;
+}
+
+if (!ui) {
+  throw new Error('\n    Unable to detect testing framework. Make sure that\n      * jasmine or mocha is installed\n      * bdd-lazy-var is included after "jasmine" or "mocha"\n  ');
+}
+
+var _interface = ui;
 
 var bdd = _interface.createUi('bdd-lazy-var');
 

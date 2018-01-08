@@ -23,8 +23,9 @@
     "url": "https://github.com/stalniy/bdd-lazy-var/issues"
   },
   "main": "./index",
-  "peerDependencies": {
-    "mocha": "^4.0.0 || ^3.0.0 || ^2.3.0"
+  "optionalDependencies": {
+    "mocha": "^4.0.0 || ^3.0.0 || ^2.3.0",
+    "jasmine": "^2.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -36,6 +37,7 @@
     "eslint": "^4.14.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.8.0",
+    "jasmine": "^2.8.0",
     "karma": "^1.7.1",
     "karma-firefox-launcher": "^1.0.1",
     "karma-mocha": "^1.3.0",
@@ -48,20 +50,21 @@
     "mocha": "NODE_PATH=. mocha -r spec/config -r spec/interface_examples -r spec/default_suite_tracking_examples",
     "test-mocha-ui": "npm run mocha -- -u index.js spec/interface_spec.js",
     "test-browser-mocha-ui": "karma start -u bdd-lazy-var --src index.js --specs spec/interface_spec.js spec/karma.config.js",
-    "test-global-ui": "npm run mocha -- -u global.js spec/global_defs_spec.js",
-    "test-browser-global-ui": "karma start -u bdd-lazy-var/global --src global.js --specs spec/global_defs_spec.js,spec/interface_spec.js spec/karma.config.js",
-    "test-getter-ui": "npm run mocha -- -u getter.js spec/getter_defs_spec.js",
-    "test-browser-getter-ui": "karma start -u bdd-lazy-var/getter --src getter.js --specs spec/getter_defs_spec.js,spec/interface_spec.js spec/karma.config.js",
-    "test-rspec-ui": "npm run mocha -- -u rspec.js spec/rspec_defs_spec.js",
-    "test-browser-rspec-ui": "karma start -u bdd-lazy-var/rspec --src rspec.js --specs spec/rspec_defs_spec.js spec/karma.config.js",
-    "test-mocha": "npm run test-mocha-ui && npm run test-global-ui && npm run test-getter-ui && npm run test-rspec-ui",
-    "test-mocha-in-browser": "npm run test-browser-mocha-ui && npm run test-browser-global-ui && npm run test-browser-getter-ui && npm run test-browser-rspec-ui",
-    "test": "npm run test-mocha && npm run test-mocha-in-browser",
+    "test-mocha-global": "npm run mocha -- -u global.js spec/global_defs_spec.js",
+    "test-browser-mocha-global": "karma start -u bdd-lazy-var/global --src global.js --specs spec/global_defs_spec.js,spec/interface_spec.js spec/karma.config.js",
+    "test-mocha-getter": "npm run mocha -- -u getter.js spec/getter_defs_spec.js",
+    "test-browser-mocha-getter": "karma start -u bdd-lazy-var/getter --src getter.js --specs spec/getter_defs_spec.js,spec/interface_spec.js spec/karma.config.js",
+    "test-mocha": "npm run test-mocha-ui && npm run test-mocha-global && npm run test-mocha-getter",
+    "test-mocha-in-browser": "npm run test-browser-mocha-ui && npm run test-browser-mocha-global && npm run test-browser-mocha-getter",
+    "test-jasmine-ui": "node tools/jasmine bdd interface_spec.js",
+    "test-jasmine-global": "node tools/jasmine bdd_global_var global_defs_spec.js",
+    "test-jasmine-getter": "node tools/jasmine bdd_getter_var getter_defs_spec.js",
+    "test-jasmine": "npm run test-jasmine-ui && npm run test-jasmine-global && npm run test-jasmine-getter",
+    "test": "npm run test-mocha && npm run test-mocha-in-browser && npm run test-jasmine",
     "build-mocha-ui": "DEST_FILE=index.js SRC_FILE=bdd rollup -c tools/rollup.umd.js",
     "build-global-ui": "DEST_FILE=global.js SRC_FILE=bdd_global_var rollup -c tools/rollup.umd.js",
     "build-getter-ui": "DEST_FILE=getter.js SRC_FILE=bdd_getter_var rollup -c tools/rollup.umd.js",
-    "build-rspec-ui": "DEST_FILE=rspec.js SRC_FILE=rspec rollup -c tools/rollup.umd.js",
-    "build-mocha": "npm run build-mocha-ui && npm run build-global-ui && npm run build-getter-ui && npm run build-rspec-ui",
+    "build-mocha": "npm run build-mocha-ui && npm run build-global-ui && npm run build-getter-ui",
     "build": "npm run build-mocha",
     "lint": "eslint lib"
   }
