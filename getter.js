@@ -582,6 +582,8 @@ function addInterface(rootSuite, options) {
   context.describe = tracker.wrapSuite(context.describe);
   context.xdescribe = tracker.wrapSuite(context.xdescribe);
   context.fdescribe = tracker.wrapSuite(context.fdescribe);
+
+  return context;
 }
 
 var jasmine = {
@@ -590,9 +592,16 @@ var jasmine = {
       Tracker: suite_tracker
     }, options);
 
-    addInterface(commonjsGlobal.jasmine.getEnv().topSuite(), config);
+    var context = addInterface(commonjsGlobal.jasmine.getEnv().topSuite(), config);
+
+    return {
+      get: context.get,
+      def: context.def
+    };
   }
 };
+
+var jest = jasmine;
 
 // eslint-disable-line
 
@@ -625,7 +634,18 @@ var mocha$1 = {
       return addInterface$1(rootSuite, config);
     };
 
-    return mocha.interfaces[name];
+    return Object.defineProperties(mocha.interfaces[name], {
+      get: {
+        get: function get$$1() {
+          return commonjsGlobal.get;
+        }
+      },
+      def: {
+        get: function get$$1() {
+          return commonjsGlobal.def;
+        }
+      }
+    });
   }
 };
 
@@ -639,7 +659,9 @@ try {
 
 var ui = void 0;
 
-if (commonjsGlobal.jasmine) {
+if (commonjsGlobal.jest) {
+  ui = jest; // eslint-disable-line
+} else if (commonjsGlobal.jasmine) {
   ui = jasmine; // eslint-disable-line
 } else if (Mocha) {
   ui = mocha$1; // eslint-disable-line

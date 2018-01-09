@@ -131,6 +131,10 @@ const Mocha = require('mocha');
 const mocha = new Mocha({
   ui: 'bdd-lazy-var/global' // bdd-lazy-var or bdd-lazy-var/getter
 });
+
+// later you can either use `get` and `def` as global functions
+// or export them from corresponding module
+const { get, def } = require('bdd-lazy-var/global');
 ```
 
 #### Using karma (via karma-mocha npm package)
@@ -178,7 +182,50 @@ jasmine --helper=spec/*_helper.js
 
 ```js
 require('jasmine-core');
-require('bdd-lazy-var/global');
+
+// later you can either use `get` and `def` as global functions
+// or export them from corresponding module
+const { get, def } = require('bdd-lazy-var/global');
+```
+
+#### Using karma (via karma-jasmine npm package)
+
+So, in `karma.config.js` it looks like this:
+
+```js
+module.exports = function(config) {
+  config.set({
+    // ....
+    files: [
+      'node_modules/bdd-lazy-var/global.js',
+      // ... your specs here
+    ]
+  });
+}
+```
+
+### Jest
+
+#### Command line
+
+Use Jest as usually if you export `get` and `def` from corresponding module
+
+```js
+jest
+```
+
+In case you want to use global `get` and `def`
+
+```sh
+jest --setupTestFrameworkScriptFile bdd-lazy-var/global
+```
+
+#### In JavaScript
+
+```js
+// later you can either use `get` and `def` as global functions
+// or export them from relative module
+const { get, def } = require('bdd-lazy-var/global');
 ```
 
 #### Using karma (via karma-jasmine npm package)

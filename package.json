@@ -12,6 +12,7 @@
   "keywords": [
     "mocha.js",
     "jasmine",
+    "jest",
     "bdd",
     "lazy",
     "variable",
@@ -39,6 +40,7 @@
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.8.0",
     "jasmine": "^2.8.0",
+    "jest": "^22.0.4",
     "karma": "^1.7.1",
     "karma-firefox-launcher": "^1.0.1",
     "karma-jasmine": "^1.1.1",
@@ -66,11 +68,19 @@
     "test.browser-jasmine-global": "karma start -f jasmine --src global.js --specs spec/global_defs_spec.js,spec/interface_spec.js tools/karma.config.js",
     "test.browser-jasmine-getter": "karma start -f jasmine --src getter.js --specs spec/getter_defs_spec.js,spec/interface_spec.js tools/karma.config.js",
     "test.jasmine-in-browser": "npm run test.browser-jasmine-ui && npm run test.browser-jasmine-global && npm run test.browser-jasmine-getter",
-    "test": "npm run test.mocha && npm run test.mocha-in-browser && npm run test.jasmine && npm run test.jasmine-in-browser",
+    "test.jest-ui": "jest --findRelatedTests spec/interface_spec.js index.js",
+    "test.jest-global": "jest --findRelatedTests spec/global_defs_spec.js global.js",
+    "test.jest-getter": "jest --findRelatedTests spec/getter_defs_spec.js getter.js",
+    "test.jest": "npm run test.jest-ui && npm run test.jest-global && npm run test.jest-getter",
+    "test": "npm run test.mocha && npm run test.mocha-in-browser && npm run test.jasmine && npm run test.jasmine-in-browser && npm run test.jest",
     "build.ui": "DEST_FILE=index.js SRC_FILE=bdd rollup -c tools/rollup.umd.js",
     "build.global-ui": "DEST_FILE=global.js SRC_FILE=bdd_global_var rollup -c tools/rollup.umd.js",
     "build.getter-ui": "DEST_FILE=getter.js SRC_FILE=bdd_getter_var rollup -c tools/rollup.umd.js",
     "build": "npm run build.ui && npm run build.global-ui && npm run build.getter-ui",
     "lint": "eslint lib"
+  },
+  "jest": {
+    "testMatch": ["**/spec/*_spec.js"],
+    "setupTestFrameworkScriptFile": "./tools/jest.setup.js"
   }
 }
