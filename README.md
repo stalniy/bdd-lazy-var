@@ -2,6 +2,8 @@
 
 [![BDD Lazy Var NPM version](https://badge.fury.io/js/bdd-lazy-var.svg)](http://badge.fury.io/js/bdd-lazy-var)
 [![Build Status](https://travis-ci.org/stalniy/bdd-lazy-var.svg?branch=master)](https://travis-ci.org/stalniy/bdd-lazy-var)
+[![Maintainability](https://api.codeclimate.com/v1/badges/65f79ae494101ba5f757/maintainability)](https://codeclimate.com/github/stalniy/bdd-lazy-var/maintainability)
+[![BDD Lazy Var Join the chat at https://gitter.im/bdd-lazy-var/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bdd-lazy-var/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Provides "ui" for testing frameworks such as [mocha](https://mochajs.org/) and [jasmine](https://jasmine.github.io/2.0/introduction.html) which allows to define lazy variables and subjects.
 
