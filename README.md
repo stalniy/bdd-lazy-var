@@ -5,7 +5,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/65f79ae494101ba5f757/maintainability)](https://codeclimate.com/github/stalniy/bdd-lazy-var/maintainability)
 [![BDD Lazy Var Join the chat at https://gitter.im/bdd-lazy-var/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bdd-lazy-var/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Provides "ui" for testing frameworks such as [mocha](https://mochajs.org/) and [jasmine](https://jasmine.github.io/2.0/introduction.html) which allows to define lazy variables and subjects.
+Provides "ui" for testing frameworks such as [mocha][mocha], [jasmine][jasmine] and [jest][jest] which allows to define lazy variables and subjects.
 
 ## Purpose
 
@@ -342,3 +342,16 @@ describe('Array', () => {
   });
 });
 ```
+
+## Want to help?
+
+Want to file a bug, contribute some code, or improve documentation? Excellent! Read up on guidelines for [contributing][contributing]
+
+## License
+
+[MIT License](http://www.opensource.org/licenses/MIT)
+
+[mocha]: https://mochajs.org
+[jasmine]: https://jasmine.github.io/2.0/introduction.html
+[jest]: https://facebook.github.io/jest/docs/en/getting-started.html
+[contributing]: https://github.com/stalniy/casl/blob/master/CONTRIBUTING.md
