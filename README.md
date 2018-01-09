@@ -7,7 +7,7 @@ Provides "ui" for testing frameworks such as [mocha](https://mochajs.org/) and [
 
 ## Purpose
 
-### Stop writing
+### Old way
 
 ```js
 describe('Suite', function() {
@@ -33,8 +33,8 @@ describe('Suite', function() {
 
 ### Why?
 
-Because as soon as your amount of your tests increase, this pattern became increasingly difficult.
-Sometimes you will fid yourself jumping around spec files, trying to find out where a given variable was initially defined.
+Because as soon as amount of your tests increase, this pattern became increasingly difficult.
+Sometimes you will find yourself jumping around spec files, trying to find out where a given variable was initially defined.
 Or even worst, you may run into subtle bugs due to clobbering variables with common names (e.g. `model`, `view`) within a given scope, failing to realize they had already been defined.
 Furthermore, declaration statements in `describe` blocks will start looking something like:
 
@@ -46,7 +46,7 @@ This is ugly and hard to parse. Finally, you can sometimes run into flaky tests 
 
 ### The new, better way
 
-In an attempt to address these issues I were having with e2e tests, I decided to create this library, which allows to define suite specific variables in more elegant way.
+In an attempt to address these issues, I had with my e2e tests, I decided to create this library, which allows to define suite specific variables in more elegant way.
 So the original code above looks something like this:
 
 ```js
@@ -73,14 +73,14 @@ Because lazy vars are cleared after each test, we didn't have to worry about tes
 
 ### Clear meaning
 
-Every time I see a $<variable> reference in my tests, I know where it's defined.
-That, coupled with removing exhaustive var declarations in `describe` blocks, have made even my largest tests clear and understandable.
+Every time I see a `$<variable>` reference in my tests, I know where it's defined.
+That, coupled with removing exhaustive `var` declarations in `describe` blocks, have made even my largest tests clear and understandable.
 
 ### Lazy evaluation
 
 Variables are instantiated only when referenced.
 That means if you don't use variable inside your test it won't be evaluated, making your tests to run faster.
-No useless instantiation and `beforeEach`s any more :)
+No useless instantiation any more!
 
 ### Composition
 
@@ -114,10 +114,6 @@ describe('User', function() {
 ```bash
 npm install bdd-lazy-var --save-dev
 ```
-
-UMD versions: `index.js`, `global.js`, `getter.js`.
-
-## How to use
 
 ### Mocha.js
 
@@ -186,6 +182,7 @@ require('bdd-lazy-var/global');
 #### Using karma (via karma-jasmine npm package)
 
 So, in `karma.config.js` it looks like this:
+
 ```js
 module.exports = function(config) {
   config.set({
@@ -196,6 +193,7 @@ module.exports = function(config) {
     ]
   });
 }
+```
 
 ## Dialects
 
@@ -204,8 +202,10 @@ module.exports = function(config) {
 * access variables by referencing `get.<variableName>` (more strict, available by requiring `bdd-lazy-var/getter`)
 * access variables by referencing `get('<variableName>')` (the most strict and less readable way, available by requiring `bdd-lazy-var/index`)
 
+All are bundled as UMD versions.
+
 ## The Core Features
-* lazily instantiated, allows variable composition
+* lazy instantiation, allows variable composition
 * automatically cleaned after each test
 * accessible inside `before/beforeAll`, `after/afterAll` callbacks
 * named `subject`s to be more explicit
