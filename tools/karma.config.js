@@ -1,8 +1,9 @@
-var path = require('path');
+const path = require('path');
 
 module.exports = function(config) {
-  var specs = (config.specs || '').split(',');
-  var srcFiles = (config.src || '').split(',');
+  const specs = (config.specs || '').split(',');
+  const srcFiles = (config.src || '').split(',');
+  const frameworks = (config.f || 'mocha').split(',');
 
   srcFiles.unshift(
     'node_modules/chai/chai.js',
@@ -15,8 +16,8 @@ module.exports = function(config) {
   );
 
   config.set({
+    frameworks,
     basePath: '..',
-    frameworks: [ 'mocha' ],
     transports: [ 'xhr-polling', 'polling' ],
     reporters: [ 'dots' ],
     port: 9876,
@@ -24,13 +25,11 @@ module.exports = function(config) {
     autoWatch: false,
     singleRun: true,
     browsers: [ 'Firefox' ],
-    files: specs,
+    files: frameworks.includes('mocha') ? specs : srcFiles.concat(specs),
     client: {
       mocha: {
         ui: config.u,
-        require: srcFiles.reverse().map(function(filePath) {
-          return path.resolve(filePath);
-        })
+        require: srcFiles.reverse().map(filePath => path.resolve(filePath))
       }
     }
   });

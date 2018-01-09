@@ -18,4 +18,12 @@
   global.includeExamplesFor = function(name) {
     examples[name].apply(this, Array.prototype.slice.call(arguments, 1));
   };
+
+  if (global.beforeAll) {
+    global.before = global.beforeAll;
+  }
+
+  if (global.afterAll) {
+    global.after = global.afterAll;
+  }
 });
