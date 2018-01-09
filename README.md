@@ -354,4 +354,4 @@ Want to file a bug, contribute some code, or improve documentation? Excellent! R
 [mocha]: https://mochajs.org
 [jasmine]: https://jasmine.github.io/2.0/introduction.html
 [jest]: https://facebook.github.io/jest/docs/en/getting-started.html
-[contributing]: https://github.com/stalniy/casl/blob/master/CONTRIBUTING.md
+[contributing]: https://github.com/stalniy/bdd-lazy-var/blob/master/CONTRIBUTING.md
