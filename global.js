@@ -591,6 +591,9 @@ var jasmine = {
   }
 };
 
+// eslint-disable-line
+
+
 function addInterface$1(rootSuite, options) {
   var tracker = new options.Tracker({ rootSuite: rootSuite });
 
@@ -626,15 +629,17 @@ var mocha$1 = {
 var Mocha = void 0;
 
 try {
-  Mocha = mocha;
-} catch (e) {}
+  Mocha = mocha; // eslint-disable-line
+} catch (e) {
+  // eslint-disable-line
+}
 
 var ui = void 0;
 
 if (commonjsGlobal.jasmine) {
-  ui = jasmine;
+  ui = jasmine; // eslint-disable-line
 } else if (Mocha) {
-  ui = mocha$1;
+  ui = mocha$1; // eslint-disable-line
 }
 
 if (!ui) {
