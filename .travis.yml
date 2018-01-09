@@ -1,7 +1,12 @@
 language: node_js
+
 node_js:
   - "4.2.3"
-  - "8.7.0"
+  - "8.9.1"
+
+before_install:
+  - if [[ `npm -v` = 2* ]]; then npm i -g npm@^5.0.0; fi
+
 before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
