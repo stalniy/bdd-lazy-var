@@ -1,6 +1,6 @@
 {
   "name": "bdd-lazy-var",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "author": "Sergii Stotskyi",
   "description": "Provides \"ui\" for testing frameworks such as mocha/jasmine which allows to define lazy variables and subjects",
   "license": "MIT",
@@ -80,7 +80,9 @@
     "lint": "eslint lib"
   },
   "jest": {
-    "testMatch": ["**/spec/*_spec.js"],
+    "testMatch": [
+      "**/spec/*_spec.js"
+    ],
     "setupTestFrameworkScriptFile": "./tools/jest.setup.js"
   }
 }
