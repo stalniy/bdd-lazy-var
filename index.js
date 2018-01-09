@@ -596,7 +596,8 @@ var jasmine = {
 
     return {
       get: context.get,
-      def: context.def
+      def: context.def,
+      subject: context.subject
     };
   }
 };
@@ -643,6 +644,11 @@ var mocha$1 = {
       def: {
         get: function get$$1() {
           return commonjsGlobal.def;
+        }
+      },
+      subject: {
+        get: function get$$1() {
+          return commonjsGlobal.subject;
         }
       }
     });
