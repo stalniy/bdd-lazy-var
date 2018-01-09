@@ -114,7 +114,9 @@ var _extends = Object.assign || function (target) {
 
 
 
-
+var toArray = function (arr) {
+  return Array.isArray(arr) ? arr : Array.from(arr);
+};
 
 var toConsumableArray = function (arr) {
   if (Array.isArray(arr)) {
@@ -350,9 +352,9 @@ var _interface$2 = createCommonjsModule(function (module) {
 
 
   module.exports = function (context, tracker, options) {
-    function get$$1(varName) {
+    var get$$1 = function get$$1(varName) {
       return variable.evaluate(varName, { in: tracker.currentContext });
-    }
+    };
 
     get$$1.definitionOf = get$$1.variable = function (varName) {
       return get$$1.bind(null, varName);
@@ -361,13 +363,23 @@ var _interface$2 = createCommonjsModule(function (module) {
     function def(varName, definition) {
       var suite = tracker.currentlyDefinedSuite;
 
-      if (Array.isArray(varName)) {
-        def(varName[0], definition);
-        defineAliasesFor(suite, varName[0], varName.slice(1));
-      } else {
+      if (!Array.isArray(varName)) {
         Metadata.ensureDefinedOn(suite).addVar(varName, definition);
         runHook('onDefineVariable', suite, varName);
+        return;
       }
+
+      var _varName = toArray(varName),
+          name = _varName[0],
+          aliases = _varName.slice(1);
+
+      def(name, definition);
+
+      var metadata$$1 = Metadata.of(suite);
+      aliases.forEach(function (alias) {
+        metadata$$1.addAliasFor(name, alias);
+        runHook('onDefineVariable', suite, alias);
+      });
     }
 
     function subject() {
@@ -398,15 +410,6 @@ var _interface$2 = createCommonjsModule(function (module) {
 
         options[name].apply(options, toConsumableArray(args.concat(context)));
       }
-    }
-
-    function defineAliasesFor(suite, varName, aliases) {
-      var metadata$$1 = Metadata.of(suite);
-
-      aliases.forEach(function (alias) {
-        metadata$$1.addAliasFor(varName, alias);
-        runHook('onDefineVariable', suite, alias);
-      });
     }
 
     return { subject: subject, def: def, get: get$$1 };
