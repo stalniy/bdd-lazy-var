@@ -1,6 +1,6 @@
 {
   "name": "bdd-lazy-var",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "author": "Sergii Stotskyi",
   "description": "Provides \"ui\" for testing frameworks such as mocha/jasmine which allows to define lazy variables and subjects",
   "license": "MIT",
