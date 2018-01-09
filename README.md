@@ -7,7 +7,7 @@ Provides "ui" for testing frameworks such as [mocha](https://mochajs.org/) and [
 
 ## Purpose
 
-### Old way
+### The old way
 
 ```js
 describe('Suite', function() {
@@ -31,7 +31,7 @@ describe('Suite', function() {
 });
 ```
 
-### Why?
+### Why should it be improved?
 
 Because as soon as amount of your tests increase, this pattern became increasingly difficult.
 Sometimes you will find yourself jumping around spec files, trying to find out where a given variable was initially defined.
