@@ -21,7 +21,7 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
       getVar('var');
       getVar('var');
 
-      expect(definition).to.have.been.called.once();
+      expect(definition).to.have.been.called.once;
     });
 
     it('can define static variable', function() {
