@@ -228,22 +228,6 @@ jest --setupTestFrameworkScriptFile bdd-lazy-var/global
 const { get, def } = require('bdd-lazy-var/global');
 ```
 
-#### Using karma (via karma-jasmine npm package)
-
-So, in `karma.config.js` it looks like this:
-
-```js
-module.exports = function(config) {
-  config.set({
-    // ....
-    files: [
-      'node_modules/bdd-lazy-var/global.js',
-      // ... your specs here
-    ]
-  });
-}
-```
-
 ## Dialects
 
 `bdd-lazy-var` provides 3 different dialects:
@@ -335,7 +319,7 @@ describe('Array', () => {
       return $subject.concat([4, 5]);
     });
 
-    it('has 1 element', () => {
+    it('is properly uses parent subject', () => {
       expect($subject).not.to.equal($collection);
       expect($collection).to.deep.equal([1, 2, 3, 4, 5]);
     });
