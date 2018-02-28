@@ -28,6 +28,10 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
       expect(getVar('staticVar')).to.equal(value);
     });
 
+    it('returns undefined where there is no definition', () => {
+      expect(getVar('notDefined')).to.equal(undefined);
+    });
+
     it('defines "get.variable" and its alias "get.definitionOf" getter builder', function() {
       expect(get.variable).to.be.a('function');
       expect(get.variable).to.equal(get.definitionOf);

@@ -203,7 +203,11 @@ var Metadata = function () {
     value: function getVar(name) {
       if (!this.values.hasOwnProperty(name)) {
         this.hasValues = true;
-        this.values[name] = this.defs[name].evaluate();
+        if (this.defs[name] instanceof VariableMetadata) {
+          this.values[name] = this.defs[name].evaluate();
+        } else {
+          this.values[name] = undefined;
+        }
       }
 
       return this.values[name];
