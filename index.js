@@ -129,14 +129,13 @@ var toConsumableArray = function (arr) {
 };
 
 var LAZY_VARS_FIELD = symbol.for('__lazyVars');
-var noop = function noop() {};
 
 var VariableMetadata = function () {
-  function VariableMetadata(name, definition) {
+  function VariableMetadata(name, definition, metadata) {
     classCallCheck(this, VariableMetadata);
 
     this.value = definition;
-    this.parent = null;
+    this.parent = metadata;
     this.names = defineProperty({}, name, true);
   }
 
@@ -154,9 +153,7 @@ var VariableMetadata = function () {
   }, {
     key: 'evaluate',
     value: function evaluate() {
-      var value = this.value;
-
-      return typeof value === 'function' ? value() : value;
+      return typeof this.value === 'function' ? this.value() : this.value;
     }
   }]);
   return VariableMetadata;
@@ -184,7 +181,7 @@ var Metadata = function () {
     value: function setVirtual(context, metadata) {
       var virtualMetadata = Object.create(metadata);
 
-      virtualMetadata.releaseVars = noop;
+      virtualMetadata.values = {};
       context[LAZY_VARS_FIELD] = virtualMetadata;
     }
   }]);
@@ -201,16 +198,17 @@ var Metadata = function () {
   createClass(Metadata, [{
     key: 'getVar',
     value: function getVar(name) {
-      if (!this.values.hasOwnProperty(name)) {
+      if (!this.values.hasOwnProperty(name) && this.defs[name]) {
         this.hasValues = true;
-        if (this.defs[name] instanceof VariableMetadata) {
-          this.values[name] = this.defs[name].evaluate();
-        } else {
-          this.values[name] = undefined;
-        }
+        this.values[name] = this.evaluate(name);
       }
 
       return this.values[name];
+    }
+  }, {
+    key: 'evaluate',
+    value: function evaluate(name) {
+      return this.defs[name].evaluate();
     }
   }, {
     key: 'addChild',
@@ -226,7 +224,7 @@ var Metadata = function () {
       }
 
       this.defined = true;
-      this.defs[name] = new VariableMetadata(name, definition);
+      this.defs[name] = new VariableMetadata(name, definition, this);
 
       return this;
     }
@@ -242,6 +240,18 @@ var Metadata = function () {
         this.values = {};
         this.hasValues = false;
       }
+    }
+  }, {
+    key: 'lookupMetadataFor',
+    value: function lookupMetadataFor(varName) {
+      var varMeta = this.defs[varName];
+      var definedIn = varMeta.parent;
+
+      if (!varMeta || !definedIn.parent.defs[varName]) {
+        throw new Error('Unknown parent variable "' + varName + '".');
+      }
+
+      return definedIn.parent;
     }
   }]);
   return Metadata;
@@ -268,6 +278,10 @@ var Variable = function () {
   }, {
     key: 'evaluate',
     value: function evaluate(varName, options) {
+      if (!options.in) {
+        throw new Error('It looke like you are trying to evaluate "' + varName + '" too early');
+      }
+
       var variable = Variable.fromStack(options.in);
 
       if (variable.isSame(varName)) {
@@ -278,7 +292,7 @@ var Variable = function () {
         variable = Variable.allocate(varName, options);
         return variable.value();
       } finally {
-        variable.release();
+        variable.pullFromStack();
       }
     }
   }, {
@@ -293,7 +307,7 @@ var Variable = function () {
 
     this.name = varName;
     this.context = context;
-    this.meta = context ? Metadata$1.of(context) : null;
+    this.evaluationMeta = context ? Metadata$1.of(context) : null;
   }
 
   createClass(Variable, [{
@@ -304,8 +318,7 @@ var Variable = function () {
   }, {
     key: 'value',
     value: function value() {
-      // console.log('<-------', this.context.result.description)
-      return Metadata$1.of(this.context).getVar(this.name);
+      return this.evaluationMeta.getVar(this.name);
     }
   }, {
     key: 'addToStack',
@@ -316,32 +329,21 @@ var Variable = function () {
       return this;
     }
   }, {
-    key: 'release',
-    value: function release() {
+    key: 'pullFromStack',
+    value: function pullFromStack() {
       this.context[CURRENTLY_RETRIEVED_VAR_FIELD].pop();
     }
   }, {
     key: 'valueInParentContext',
     value: function valueInParentContext(varOrAliasName) {
-      var prevMeta = this.meta;
+      var meta = this.evaluationMeta;
 
       try {
-        this.meta = this.getParentMetadataFor(varOrAliasName);
-        return this.meta.getVar(varOrAliasName);
+        this.evaluationMeta = meta.lookupMetadataFor(varOrAliasName);
+        return this.evaluationMeta.evaluate(varOrAliasName);
       } finally {
-        this.meta = prevMeta;
+        this.evaluationMeta = meta;
       }
-    }
-  }, {
-    key: 'getParentMetadataFor',
-    value: function getParentMetadataFor(varName) {
-      var metadata$$1 = this.meta;
-
-      if (!metadata$$1 || !metadata$$1.defs[varName]) {
-        throw new Error('Unknown parent variable "' + varName + '".');
-      }
-
-      return metadata$$1.parent;
     }
   }]);
   return Variable;
@@ -428,25 +430,13 @@ var SuiteTracker = function () {
     classCallCheck(this, SuiteTracker);
 
     this.state = { currentlyDefinedSuite: config.rootSuite };
-    this.suiteTracker = config.suiteTracker || this.createSuiteTracker();
+    this.suiteTracker = config.suiteTracker;
     this.suites = [];
+    this.cleanUpCurrentContext = this.cleanUpCurrentContext.bind(this);
+    this.cleanUpCurrentAndRestorePrevContext = this.cleanUpCurrentAndRestorePrevContext.bind(this);
   }
 
   createClass(SuiteTracker, [{
-    key: 'createSuiteTracker',
-    value: function createSuiteTracker() {
-      return {
-        before: function before(tracker, suite) {
-          suite.beforeAll(tracker.registerSuite);
-        },
-        after: function after(tracker, suite) {
-          suite.beforeAll(tracker.cleanUp);
-          suite.afterEach(tracker.cleanUp);
-          suite.afterAll(tracker.cleanUpAndRestorePrev);
-        }
-      };
-    }
-  }, {
     key: 'wrapSuite',
     value: function wrapSuite(describe) {
       var tracker = this;
@@ -482,23 +472,12 @@ var SuiteTracker = function () {
   }, {
     key: 'execute',
     value: function execute(defineTests, suite, args) {
-      var tracker = this.buildRuntimeTrackerFor(suite);
-
-      this.suiteTracker.before(tracker, suite);
+      this.suiteTracker.before(this, suite);
       defineTests.apply(suite, args);
 
       if (Metadata$2.of(suite)) {
-        this.suiteTracker.after(tracker, suite);
+        this.suiteTracker.after(this, suite);
       }
-    }
-  }, {
-    key: 'buildRuntimeTrackerFor',
-    value: function buildRuntimeTrackerFor(suite) {
-      return {
-        registerSuite: this.registerSuite.bind(this, suite),
-        cleanUp: this.cleanUp.bind(this, suite),
-        cleanUpAndRestorePrev: this.cleanUpAndRestorePrev.bind(this, suite)
-      };
     }
   }, {
     key: 'isRoot',
@@ -543,10 +522,15 @@ var SuiteTracker = function () {
       }
     }
   }, {
-    key: 'cleanUpAndRestorePrev',
-    value: function cleanUpAndRestorePrev(context) {
+    key: 'cleanUpCurrentContext',
+    value: function cleanUpCurrentContext() {
+      this.cleanUp(this.currentContext);
+    }
+  }, {
+    key: 'cleanUpCurrentAndRestorePrevContext',
+    value: function cleanUpCurrentAndRestorePrevContext() {
+      this.cleanUpCurrentContext();
       this.state.currentTestContext = this.state.prevTestContext;
-      return this.cleanUp(context);
     }
   }, {
     key: 'currentContext',
@@ -566,13 +550,12 @@ var suite_tracker = SuiteTracker;
 
 function createSuiteTracker() {
   return {
-    before: function before(tracker) {
-      commonjsGlobal.beforeAll(tracker.registerSuite);
-      commonjsGlobal.afterEach(tracker.cleanUp);
-      commonjsGlobal.afterAll(tracker.cleanUpAndRestorePrev);
+    before: function before(tracker, suite) {
+      commonjsGlobal.beforeAll(tracker.registerSuite.bind(tracker, suite));
+      commonjsGlobal.afterAll(tracker.cleanUpCurrentAndRestorePrevContext);
     },
     after: function after(tracker) {
-      commonjsGlobal.beforeAll(tracker.cleanUp);
+      commonjsGlobal.beforeAll(tracker.cleanUpCurrentContext);
     }
   };
 }
@@ -586,6 +569,7 @@ function addInterface(rootSuite, options) {
   context.describe = tracker.wrapSuite(context.describe);
   context.xdescribe = tracker.wrapSuite(context.xdescribe);
   context.fdescribe = tracker.wrapSuite(context.fdescribe);
+  commonjsGlobal.afterEach(tracker.cleanUpCurrentContext);
 
   return context;
 }
@@ -611,9 +595,22 @@ var jest = jasmine;
 // eslint-disable-line
 
 
-function addInterface$1(rootSuite, options) {
-  var tracker = new options.Tracker({ rootSuite: rootSuite });
+function createSuiteTracker$1() {
+  return {
+    before: function before(tracker, suite) {
+      suite.beforeAll(tracker.registerSuite.bind(tracker, suite));
+    },
+    after: function after(tracker, suite) {
+      suite.beforeAll(tracker.cleanUpCurrentContext);
+      suite.afterAll(tracker.cleanUpCurrentAndRestorePrevContext);
+    }
+  };
+}
 
+function addInterface$1(rootSuite, options) {
+  var tracker = new options.Tracker({ rootSuite: rootSuite, suiteTracker: createSuiteTracker$1() });
+
+  rootSuite.afterEach(tracker.cleanUpCurrentContext);
   rootSuite.on('pre-require', function (context) {
     var ui = _interface$2(context, tracker, options);
     var describe = context.describe;

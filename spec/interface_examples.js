@@ -253,4 +253,32 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
       });
     });
   });
+
+  describe('when calls variable defined in parent suites', function() {
+    subject(function() {
+      return { isRoot: getVar('isRoot') };
+    });
+
+    def('isRoot', true);
+
+    describe('one more level which overrides parent variable', function() {
+      subject(function() {
+        return getVar('subject').isRoot;
+      });
+
+      describe('suite that calls parent variable and redefines dependent variable', function() {
+        def('isRoot', false);
+
+        it('gets the correct variable', function() {
+          expect(getVar('subject')).to.be.false;
+        });
+      });
+
+      describe('suite that calls parent variable', function () {
+        it('gets the correct variable', function() {
+          expect(getVar('subject')).to.be.true;
+        });
+      });
+    });
+  });
 });

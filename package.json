@@ -74,9 +74,9 @@
     "test.jest-getter": "jest --findRelatedTests spec/getter_defs_spec.js getter.js",
     "test.jest": "npm run test.jest-ui && npm run test.jest-global && npm run test.jest-getter",
     "test": "npm run test.mocha && npm run test.mocha-in-browser && npm run test.jasmine && npm run test.jasmine-in-browser && npm run test.jest",
-    "build.ui": "DEST_FILE=index.js SRC_FILE=bdd rollup -c tools/rollup.umd.js",
-    "build.global-ui": "DEST_FILE=global.js SRC_FILE=bdd_global_var rollup -c tools/rollup.umd.js",
-    "build.getter-ui": "DEST_FILE=getter.js SRC_FILE=bdd_getter_var rollup -c tools/rollup.umd.js",
+    "build.ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd.js -o index.js",
+    "build.global-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_global_var.js -o global.js",
+    "build.getter-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_getter_var.js -o getter.js",
     "build": "npm run build.ui && npm run build.global-ui && npm run build.getter-ui",
     "lint": "eslint lib"
   },

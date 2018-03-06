@@ -38,7 +38,6 @@ function useSafeDependencies(deps) {
 
 export default {
   external: ['mocha', 'jasmine'],
-  input: `lib/interface/dialects/${process.env.SRC_FILE}`,
   output: {
     format: 'umd',
     name: MODULE_NAME,
@@ -46,7 +45,6 @@ export default {
       mocha: 'Mocha',
       jasmine: 'jasmine'
     },
-    file: process.env.DEST_FILE,
   },
   plugins: [
     commonjs({
