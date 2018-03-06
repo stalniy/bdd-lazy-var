@@ -1,8 +1,9 @@
 language: node_js
 
 node_js:
-  - "6.0.0"
-  - "8.9.1"
+  - 6 # to be removed 2019-04-01
+  - lts/*
+  - node
 
 before_install:
   - if [[ `npm -v` = 2* ]]; then npm i -g npm@3.10.8; fi
