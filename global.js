@@ -357,6 +357,15 @@ var _interface$2 = createCommonjsModule(function (module) {
   var Metadata = metadata.Metadata;
 
 
+  var SHARED_EXAMPLES = {};
+  function sharedExamplesFor(name, defs) {
+    if (SHARED_EXAMPLES[name]) {
+      throw new Error('Attempt to override "' + name + '" shared example');
+    }
+
+    SHARED_EXAMPLES[name] = defs;
+  }
+
   module.exports = function (context, tracker, options) {
     var get$$1 = function get$$1(varName) {
       return variable.evaluate(varName, { in: tracker.currentContext });
@@ -408,17 +417,39 @@ var _interface$2 = createCommonjsModule(function (module) {
       return get$$1('subject');
     }
 
+    function includeExamplesFor(name) {
+      if (!SHARED_EXAMPLES.hasOwnProperty(name)) {
+        throw new Error('Attempt to include not defined shared behavior "' + name + '"');
+      }
+
+      for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+        args[_key2 - 1] = arguments[_key2];
+      }
+
+      SHARED_EXAMPLES[name].apply(tracker.currentlyDefinedSuite, args);
+    }
+
+    function itBehavesLike(name) {
+      for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+        args[_key3 - 1] = arguments[_key3];
+      }
+
+      describe('behaves like "' + name + '"', function () {
+        includeExamplesFor.apply(undefined, ['"' + name + '" behavior'].concat(args));
+      });
+    }
+
     function runHook(name) {
       if (typeof options[name] === 'function') {
-        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-          args[_key2 - 1] = arguments[_key2];
+        for (var _len4 = arguments.length, args = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+          args[_key4 - 1] = arguments[_key4];
         }
 
         options[name].apply(options, toConsumableArray(args.concat(context)));
       }
     }
 
-    return { subject: subject, def: def, get: get$$1 };
+    return { subject: subject, def: def, get: get$$1, sharedExamplesFor: sharedExamplesFor, includeExamplesFor: includeExamplesFor, itBehavesLike: itBehavesLike };
   };
 });
 

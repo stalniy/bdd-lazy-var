@@ -10,15 +10,6 @@
   global.expect = chai.expect;
   global.spy = chai.spy;
 
-  var examples = {};
-  global.sharedExamplesFor = function(name, defs) {
-    examples[name] = defs;
-  };
-
-  global.includeExamplesFor = function(name) {
-    examples[name].apply(this, Array.prototype.slice.call(arguments, 1));
-  };
-
   if (global.beforeAll) {
     global.before = global.beforeAll;
   }
