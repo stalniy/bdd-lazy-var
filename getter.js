@@ -129,6 +129,7 @@ var toConsumableArray = function (arr) {
 };
 
 var LAZY_VARS_FIELD = symbol.for('__lazyVars');
+
 var VariableMetadata = function () {
   function VariableMetadata(name, definition, metadata) {
     classCallCheck(this, VariableMetadata);
@@ -170,7 +171,7 @@ var Metadata = function () {
     key: 'ensureDefinedOn',
     value: function ensureDefinedOn(context) {
       if (!context.hasOwnProperty(LAZY_VARS_FIELD)) {
-        context[LAZY_VARS_FIELD] = new Metadata(context);
+        context[LAZY_VARS_FIELD] = new Metadata();
       }
 
       return context[LAZY_VARS_FIELD];
@@ -180,15 +181,14 @@ var Metadata = function () {
     value: function setVirtual(context, metadata) {
       var virtualMetadata = Object.create(metadata);
 
-      virtualMetadata.ctx = context;
+      virtualMetadata.values = {};
       context[LAZY_VARS_FIELD] = virtualMetadata;
     }
   }]);
 
-  function Metadata(context) {
+  function Metadata() {
     classCallCheck(this, Metadata);
 
-    this.ctx = context;
     this.defs = {};
     this.values = {};
     this.hasValues = false;
@@ -200,10 +200,15 @@ var Metadata = function () {
     value: function getVar(name) {
       if (!this.values.hasOwnProperty(name) && this.defs[name]) {
         this.hasValues = true;
-        this.values[name] = this.defs[name].evaluate();
+        this.values[name] = this.evaluate(name);
       }
 
       return this.values[name];
+    }
+  }, {
+    key: 'evaluate',
+    value: function evaluate(name) {
+      return this.defs[name].evaluate();
     }
   }, {
     key: 'addChild',
@@ -237,8 +242,8 @@ var Metadata = function () {
       }
     }
   }, {
-    key: 'getParentContextFor',
-    value: function getParentContextFor(varName) {
+    key: 'lookupMetadataFor',
+    value: function lookupMetadataFor(varName) {
       var varMeta = this.defs[varName];
       var definedIn = varMeta.parent;
 
@@ -246,7 +251,7 @@ var Metadata = function () {
         throw new Error('Unknown parent variable "' + varName + '".');
       }
 
-      return definedIn.parent.ctx;
+      return definedIn.parent;
     }
   }]);
   return Metadata;
@@ -287,7 +292,7 @@ var Variable = function () {
         variable = Variable.allocate(varName, options);
         return variable.value();
       } finally {
-        variable.release();
+        variable.pullFromStack();
       }
     }
   }, {
@@ -302,7 +307,7 @@ var Variable = function () {
 
     this.name = varName;
     this.context = context;
-    this.evaluationCtx = context;
+    this.evaluationMeta = context ? Metadata$1.of(context) : null;
   }
 
   createClass(Variable, [{
@@ -313,7 +318,7 @@ var Variable = function () {
   }, {
     key: 'value',
     value: function value() {
-      return Metadata$1.of(this.evaluationCtx).getVar(this.name);
+      return this.evaluationMeta.getVar(this.name);
     }
   }, {
     key: 'addToStack',
@@ -324,32 +329,21 @@ var Variable = function () {
       return this;
     }
   }, {
-    key: 'release',
-    value: function release() {
+    key: 'pullFromStack',
+    value: function pullFromStack() {
       this.context[CURRENTLY_RETRIEVED_VAR_FIELD].pop();
     }
   }, {
     key: 'valueInParentContext',
     value: function valueInParentContext(varOrAliasName) {
-      var ctx = this.evaluationCtx;
+      var meta = this.evaluationMeta;
 
       try {
-        this.evaluationCtx = this.getParentContextFor(varOrAliasName);
-        return Metadata$1.of(this.evaluationCtx).getVar(varOrAliasName);
+        this.evaluationMeta = meta.lookupMetadataFor(varOrAliasName);
+        return this.evaluationMeta.evaluate(varOrAliasName);
       } finally {
-        this.evaluationCtx = ctx;
+        this.evaluationMeta = meta;
       }
-    }
-  }, {
-    key: 'getParentContextFor',
-    value: function getParentContextFor(varName) {
-      var metadata$$1 = Metadata$1.of(this.evaluationCtx);
-
-      if (!metadata$$1) {
-        throw new Error('Unable to find metadata for variable "' + varName + '"');
-      }
-
-      return metadata$$1.getParentContextFor(varName);
     }
   }]);
   return Variable;
@@ -535,8 +529,8 @@ var SuiteTracker = function () {
   }, {
     key: 'cleanUpCurrentAndRestorePrevContext',
     value: function cleanUpCurrentAndRestorePrevContext() {
+      this.cleanUpCurrentContext();
       this.state.currentTestContext = this.state.prevTestContext;
-      return this.cleanUpCurrentContext();
     }
   }, {
     key: 'currentContext',

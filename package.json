@@ -53,7 +53,7 @@
   },
   "scripts": {
     "mocha": "NODE_PATH=. mocha -r spec/config -r spec/interface_examples -r spec/default_suite_tracking_examples",
-    "test.mocha-ui": "npm run mocha -- -u lib/interface/dialects/bdd.js spec/interface_spec.js",
+    "test.mocha-ui": "npm run mocha -- -u index.js spec/interface_spec.js",
     "test.mocha-global": "npm run mocha -- -u global.js spec/global_defs_spec.js",
     "test.mocha-getter": "npm run mocha -- -u getter.js spec/getter_defs_spec.js",
     "test.mocha": "npm run test.mocha-ui && npm run test.mocha-global && npm run test.mocha-getter",
@@ -61,7 +61,7 @@
     "test.browser-mocha-global": "karma start -u bdd-lazy-var/global --src global.js --specs spec/global_defs_spec.js,spec/interface_spec.js tools/karma.config.js",
     "test.browser-mocha-getter": "karma start -u bdd-lazy-var/getter --src getter.js --specs spec/getter_defs_spec.js,spec/interface_spec.js tools/karma.config.js",
     "test.mocha-in-browser": "npm run test.browser-mocha-ui && npm run test.browser-mocha-global && npm run test.browser-mocha-getter",
-    "test.jasmine-ui": "node tools/jasmine lib/interface/dialects/bdd.js interface_spec.js",
+    "test.jasmine-ui": "node tools/jasmine index.js interface_spec.js",
     "test.jasmine-global": "node tools/jasmine global.js global_defs_spec.js",
     "test.jasmine-getter": "node tools/jasmine getter.js getter_defs_spec.js",
     "test.jasmine": "npm run test.jasmine-ui && npm run test.jasmine-global && npm run test.jasmine-getter",
