@@ -266,13 +266,19 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
         return getVar('subject').isRoot;
       });
 
-      describe('suite that calls parent variable', function() {
+      describe('suite that calls parent variable and redefines dependent variable', function() {
         def('isRoot', false);
 
         it('gets the correct variable', function() {
           expect(getVar('subject')).to.be.false;
         });
       });
-    })
+
+      describe('suite that calls parent variable', function () {
+        it('gets the correct variable', function() {
+          expect(getVar('subject')).to.be.true;
+        });
+      });
+    });
   });
 });
