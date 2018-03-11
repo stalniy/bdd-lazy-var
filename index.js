@@ -9,10 +9,6 @@ mocha = mocha && mocha.hasOwnProperty('default') ? mocha['default'] : mocha;
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-
-
-
-
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
@@ -49,10 +45,6 @@ var createClass = function () {
   };
 }();
 
-
-
-
-
 var defineProperty = function (obj, key, value) {
   if (key in obj) {
     Object.defineProperty(obj, key, {
@@ -81,38 +73,6 @@ var _extends = Object.assign || function (target) {
 
   return target;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 var toArray = function (arr) {
   return Array.isArray(arr) ? arr : Array.from(arr);
@@ -391,7 +351,7 @@ var shared_behavior = {
   itBehavesLike: itBehavesLike
 };
 
-var _interface$2 = createCommonjsModule(function (module) {
+var _interface = createCommonjsModule(function (module) {
   var Metadata = metadata.Metadata;
   var sharedExamplesFor = shared_behavior.sharedExamplesFor,
       includeExamplesFor = shared_behavior.includeExamplesFor,
@@ -541,15 +501,15 @@ var SuiteTracker = function () {
   }, {
     key: 'linkMetadataOf',
     value: function linkMetadataOf(suite) {
-      var metadata$$2 = Metadata$2.of(suite);
+      var metadata$$1 = Metadata$2.of(suite);
       var parentMetadata = Metadata$2.of(suite.parent || suite.parentSuite);
 
       if (!parentMetadata) {
         return;
       }
 
-      if (metadata$$2) {
-        parentMetadata.addChild(metadata$$2);
+      if (metadata$$1) {
+        parentMetadata.addChild(metadata$$1);
       } else {
         Metadata$2.setVirtual(suite, parentMetadata);
       }
@@ -562,10 +522,10 @@ var SuiteTracker = function () {
   }, {
     key: 'cleanUp',
     value: function cleanUp(context) {
-      var metadata$$2 = Metadata$2.of(context);
+      var metadata$$1 = Metadata$2.of(context);
 
-      if (metadata$$2) {
-        metadata$$2.releaseVars();
+      if (metadata$$1) {
+        metadata$$1.releaseVars();
       }
     }
   }, {
@@ -610,7 +570,7 @@ function createSuiteTracker() {
 function addInterface(rootSuite, options) {
   var context = commonjsGlobal;
   var tracker = new options.Tracker({ rootSuite: rootSuite, suiteTracker: createSuiteTracker() });
-  var ui = _interface$2(context, tracker, options);
+  var ui = _interface(context, tracker, options);
 
   _extends(context, ui);
   context.describe = tracker.wrapSuite(context.describe);
@@ -653,7 +613,7 @@ function addInterface$1(rootSuite, options) {
 
   rootSuite.afterEach(tracker.cleanUpCurrentContext);
   rootSuite.on('pre-require', function (context) {
-    var ui = _interface$2(context, tracker, options);
+    var ui = _interface(context, tracker, options);
     var describe = context.describe;
 
     _extends(context, ui);
@@ -711,9 +671,9 @@ if (!ui) {
   throw new Error('\n    Unable to detect testing framework. Make sure that\n      * jasmine or mocha is installed\n      * bdd-lazy-var is included after "jasmine" or "mocha"\n  ');
 }
 
-var _interface = ui;
+var _interface$1 = ui;
 
-var bdd = _interface.createUi('bdd-lazy-var');
+var bdd = _interface$1.createUi('bdd-lazy-var');
 
 return bdd;
 

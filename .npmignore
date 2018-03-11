@@ -1,0 +1,5 @@
+spec/
+tools/
+doc/
+node_modules/
+.*
