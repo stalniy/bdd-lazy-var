@@ -74,6 +74,7 @@
     "test.jest-getter": "jest --findRelatedTests spec/getter_defs_spec.js getter.js",
     "test.jest": "npm run test.jest-ui && npm run test.jest-global && npm run test.jest-getter",
     "test": "npm run test.mocha && npm run test.mocha-in-browser && npm run test.jasmine && npm run test.jasmine-in-browser && npm run test.jest",
+    "prebuild": "npm run lint",
     "build.ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd.js -o index.js",
     "build.global-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_global_var.js -o global.js",
     "build.getter-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_getter_var.js -o getter.js",

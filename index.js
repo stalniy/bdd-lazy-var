@@ -679,9 +679,9 @@ var mocha$1 = {
     };
 
     var getters = ['get', 'def', 'subject', 'sharedExamplesFor', 'includeExamplesFor', 'itBehavesLike'];
-    var defs = getters.reduce(function (all, name) {
-      all[name] = { get: function get$$1() {
-          return commonjsGlobal[name];
+    var defs = getters.reduce(function (all, uiName) {
+      all[uiName] = { get: function get$$1() {
+          return commonjsGlobal[uiName];
         } };
       return all;
     }, {});
