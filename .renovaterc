@@ -5,10 +5,13 @@
   "pinVersions": false,
   "separatePatchReleases": false,
   "ignoreUnstable": true,
-  "versionStrategy": "widen",
   "automerge": true,
+  "automergeType": "branch-push",
   "lockFileMaintenance": {
     "enabled": true
+  },
+  "optionalDependencies": {
+    "versionStrategy": "widen"
   },
   "packageRules": [
     {
@@ -34,6 +37,10 @@
     {
       "packagePatterns": ["^rollup"],
       "groupName": "rollup"
+    },
+    {
+      "packagePatterns": ["jasmine"],
+      "groupName": "jasmine"
     }
   ]
 }
