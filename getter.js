@@ -477,7 +477,7 @@ var SuiteTracker = function () {
     var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     classCallCheck(this, SuiteTracker);
 
-    this.state = { currentlyDefinedSuite: config.rootSuite };
+    this.state = { currentlyDefinedSuite: config.rootSuite, contexts: [] };
     this.suiteTracker = config.suiteTracker;
     this.suites = [];
     this.cleanUpCurrentContext = this.cleanUpCurrentContext.bind(this);
@@ -557,8 +557,7 @@ var SuiteTracker = function () {
   }, {
     key: 'registerSuite',
     value: function registerSuite(context) {
-      this.state.prevTestContext = this.state.currentTestContext || null;
-      this.state.currentTestContext = context;
+      this.state.contexts.push(context);
     }
   }, {
     key: 'cleanUp',
@@ -578,12 +577,12 @@ var SuiteTracker = function () {
     key: 'cleanUpCurrentAndRestorePrevContext',
     value: function cleanUpCurrentAndRestorePrevContext() {
       this.cleanUpCurrentContext();
-      this.state.currentTestContext = this.state.prevTestContext;
+      this.state.contexts.pop();
     }
   }, {
     key: 'currentContext',
     get: function get$$1() {
-      return this.state.currentTestContext;
+      return this.state.contexts[this.state.contexts.length - 1];
     }
   }, {
     key: 'currentlyDefinedSuite',

@@ -1,9 +1,11 @@
 sharedExamplesFor('Lazy Vars Interface', function(getVar) {
   describe('by default', function() {
-    var definition = spy();
+    var definition;
     var value = {};
 
-    def('var', definition);
+    def('var', function() {
+      return definition();
+    });
     def('staticVar', value);
 
     def('fullName', function() {
@@ -12,6 +14,10 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
 
     def('firstName', 'John');
     def('lastName', 'Doe');
+
+    beforeEach(function() {
+      definition = spy();
+    })
 
     it('does not create variable if it has not been accessed', function() {
       expect(definition).not.to.have.been.called();
