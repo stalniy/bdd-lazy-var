@@ -112,12 +112,141 @@ describe('User', function() {
 })
 ```
 
+## Tests reusage
+
+Very often you may find that some behavior repeats (e.g., when you implement Adapter pattern),
+and you would like to reuse tests for a different class or object.
+To do this [Wiki of Mocha.js](https://github.com/mochajs/mocha/wiki/Shared-Behaviours) recommend to move your tests into separate function and call it whenever you need it.
+
+I prefer to be more explicit in doing this, that's why created few helper methods:
+* `sharedExamplesFor` - defines a set of reusable tests. When you call this function, it just stores your tests
+* `includeExamplesFor` - runs previously defined examples in current context (i.e., in current `describe`)
+* `itBehavesLike` - runs defined examples in nested context (i.e., in nested `describe`)
+
+**WARNING**: files containing shared examples must be loaded before the files that
+use them.
+
+#### Scenarios
+
+<details>
+  <summary>shared examples group included in two groups in one file</summary>
+
+```js
+sharedExamplesFor('a collection', () => {
+  it('has three items', () => {
+    expect($subject.size).to.equal(3)
+  })
+
+  describe('#has', () => {
+    it('returns true with an an item that is in the collection', () => {
+      expect($subject.has(7)).to.be.true
+    })
+
+    it('returns false with an an item that is not in the collection', () => {
+      expect($subject.has(9)).to.be.false
+    })
+  })
+})
+
+describe('Set', () => {
+  subject(() => new Set([1, 2, 7]))
+
+  itBehavesLike('a collection')
+})
+
+describe('Map', () => {
+  subject(() => new Map([[2, 1], [7, 5], [3, 4]]))
+
+  itBehavesLike('a collection')
+})
+```
+</details>
+
+<details>
+  <summary>Passing parameters to a shared example group</summary>
+
+```js
+sharedExamplesFor('a collection', (size, existingItem, nonExistingItem) => {
+  it('has three items', () => {
+    expect($subject.size).to.equal(size)
+  })
+
+  describe('#has', () => {
+    it('returns true with an an item that is in the collection', () => {
+      expect($subject.has(existingItem)).to.be.true
+    })
+
+    it('returns false with an an item that is not in the collection', () => {
+      expect($subject.has(nonExistingItem)).to.be.false
+    })
+  })
+})
+
+describe('Set', () => {
+  subject(() => new Set([1, 2, 7]))
+
+  itBehavesLike('a collection', 3, 2, 10)
+})
+
+describe('Map', () => {
+  subject(() => new Map([[2, 1]]))
+
+  itBehavesLike('a collection', 1, 2, 3)
+})
+```
+</details>
+
+<details>
+  <summary>Passing lazy vars to a shared example group</summary>
+
+There are 2 ways how to pass lazy variables:
+* all variables are inherited by nested contexts (i.e., `describe` calls),
+so you can rely on variable name, as it was done with `subject` in previous examples
+* you can pass variable definition using `get.variable` helper
+
+```js
+
+sharedExamplesFor('a collection', (collection) => {
+  def('collection', collection)
+
+  it('has three items', () => {
+    expect($collection.size).to.equal(1)
+  })
+
+  describe('#has', () => {
+    it('returns true with an an item that is in the collection', () => {
+      expect($collection.has(7)).to.be.true
+    })
+
+    it('returns false with an an item that is not in the collection', () => {
+      expect($collection.has(9)).to.be.false
+    })
+  })
+})
+
+describe('Set', () => {
+  subject(() => new Set([7]))
+
+  itBehavesLike('a collection', get.variable('subject'))
+})
+
+describe('Map', () => {
+  subject(() => new Map([[2, 1]]))
+
+  itBehavesLike('a collection', get.variable('subject'))
+})
+```
+</details>
+
+
 ## Installation
+
 ```bash
 npm install bdd-lazy-var --save-dev
 ```
 
-### Mocha.js
+<details>
+  <summary>Mocha.js</summary>
 
 #### Command line
 ```sh
@@ -125,6 +254,7 @@ mocha -u bdd-lazy-var
 ```
 
 #### In JavaScript
+
 ```js
 const Mocha = require('mocha');
 
@@ -155,8 +285,10 @@ module.exports = function(config) {
   });
 }
 ```
+</details>
 
-### Jasmine
+<details>
+  <summary>Jasmine.js</summary>
 
 #### Command line
 
@@ -203,8 +335,10 @@ module.exports = function(config) {
   });
 }
 ```
+</details>
 
-### Jest
+<details>
+  <summary>Jest</summary>
 
 #### Command line
 
@@ -227,6 +361,7 @@ jest --setupTestFrameworkScriptFile bdd-lazy-var/global
 // or export them from relative module
 const { get, def } = require('bdd-lazy-var/global');
 ```
+</details>
 
 ## Dialects
 
@@ -249,7 +384,8 @@ For more information, read [the article on Medium](https://medium.com/@sergiy.st
 
 ## Examples
 
-### Test with subject
+<details>
+  <summary>Test with subject</summary>
 
 ```js
 describe('Array', () => {
@@ -260,8 +396,10 @@ describe('Array', () => {
   });
 });
 ```
+</details>
 
-### Named subject
+<details>
+  <summary>Named subject</summary>
 
 ```js
 describe('Array', () => {
@@ -273,8 +411,10 @@ describe('Array', () => {
   });
 });
 ```
+</details>
 
-### With `beforeEach` and redefined subject
+<details>
+  <summary>`beforeEach` and redefined subject</summary>
 
 ```js
 describe('Array', () => {
@@ -301,8 +441,10 @@ describe('Array', () => {
   });
 });
 ```
+</details>
 
-### Access parent variable in child variable definition
+<details>
+  <summary>Access parent variable in child variable definition</summary>
 
 ```js
 describe('Array', () => {
@@ -326,6 +468,7 @@ describe('Array', () => {
   });
 });
 ```
+</details>
 
 ## Want to help?
 
