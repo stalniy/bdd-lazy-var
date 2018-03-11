@@ -11,7 +11,8 @@ jasmine.loadConfig({
   spec_dir: 'spec',
   spec_files: [
     'interface_examples.js',
-    'default_suite_tracking_examples.js'
+    'default_suite_tracking_examples.js',
+    'shared_behavior_spec.js'
   ].concat(process.argv.slice(3)),
 });
 

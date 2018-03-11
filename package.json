@@ -52,7 +52,7 @@
     "rollup-plugin-commonjs": "^8.2.6"
   },
   "scripts": {
-    "mocha": "NODE_PATH=. mocha -r spec/config spec/*_examples.js",
+    "mocha": "NODE_PATH=. mocha -r spec/config spec/*_examples.js spec/shared_behavior_spec.js",
     "test.mocha-ui": "npm run mocha -- -u index.js spec/interface_spec.js",
     "test.mocha-global": "npm run mocha -- -u global.js spec/global_defs_spec.js",
     "test.mocha-getter": "npm run mocha -- -u getter.js spec/getter_defs_spec.js",
