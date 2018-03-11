@@ -52,7 +52,7 @@
     "rollup-plugin-commonjs": "^8.2.6"
   },
   "scripts": {
-    "mocha": "NODE_PATH=. mocha -r spec/config -r spec/interface_examples -r spec/default_suite_tracking_examples",
+    "mocha": "NODE_PATH=. mocha -r spec/config spec/*_examples.js spec/shared_behavior_spec.js",
     "test.mocha-ui": "npm run mocha -- -u index.js spec/interface_spec.js",
     "test.mocha-global": "npm run mocha -- -u global.js spec/global_defs_spec.js",
     "test.mocha-getter": "npm run mocha -- -u getter.js spec/getter_defs_spec.js",
@@ -74,6 +74,7 @@
     "test.jest-getter": "jest --findRelatedTests spec/getter_defs_spec.js getter.js",
     "test.jest": "npm run test.jest-ui && npm run test.jest-global && npm run test.jest-getter",
     "test": "npm run test.mocha && npm run test.mocha-in-browser && npm run test.jasmine && npm run test.jasmine-in-browser && npm run test.jest",
+    "prebuild": "npm run lint",
     "build.ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd.js -o index.js",
     "build.global-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_global_var.js -o global.js",
     "build.getter-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_getter_var.js -o getter.js",

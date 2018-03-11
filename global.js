@@ -353,8 +353,49 @@ Variable.EMPTY = new Variable(null, null);
 
 var variable = Variable;
 
+var SHARED_EXAMPLES = {};
+
+function sharedExamplesFor(name, defs) {
+  if (SHARED_EXAMPLES[name]) {
+    throw new Error('Attempt to override "' + name + '" shared example');
+  }
+
+  SHARED_EXAMPLES[name] = defs;
+}
+
+function includeExamplesFor(name) {
+  if (!SHARED_EXAMPLES.hasOwnProperty(name)) {
+    throw new Error('Attempt to include not defined shared behavior "' + name + '"');
+  }
+
+  for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+    args[_key - 1] = arguments[_key];
+  }
+
+  SHARED_EXAMPLES[name].apply(null, args);
+}
+
+function itBehavesLike(name) {
+  for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+    args[_key2 - 1] = arguments[_key2];
+  }
+
+  commonjsGlobal.describe('behaves like ' + name, function () {
+    includeExamplesFor.apply(undefined, [name].concat(args));
+  });
+}
+
+var shared_behavior = {
+  sharedExamplesFor: sharedExamplesFor,
+  includeExamplesFor: includeExamplesFor,
+  itBehavesLike: itBehavesLike
+};
+
 var _interface$2 = createCommonjsModule(function (module) {
   var Metadata = metadata.Metadata;
+  var sharedExamplesFor = shared_behavior.sharedExamplesFor,
+      includeExamplesFor = shared_behavior.includeExamplesFor,
+      itBehavesLike = shared_behavior.itBehavesLike;
 
 
   module.exports = function (context, tracker, options) {
@@ -418,7 +459,14 @@ var _interface$2 = createCommonjsModule(function (module) {
       }
     }
 
-    return { subject: subject, def: def, get: get$$1 };
+    return {
+      subject: subject,
+      def: def,
+      get: get$$1,
+      sharedExamplesFor: sharedExamplesFor,
+      includeExamplesFor: includeExamplesFor,
+      itBehavesLike: itBehavesLike
+    };
   };
 });
 
@@ -571,7 +619,7 @@ function addInterface(rootSuite, options) {
   context.fdescribe = tracker.wrapSuite(context.fdescribe);
   commonjsGlobal.afterEach(tracker.cleanUpCurrentContext);
 
-  return context;
+  return ui;
 }
 
 var jasmine = {
@@ -580,13 +628,7 @@ var jasmine = {
       Tracker: suite_tracker
     }, options);
 
-    var context = addInterface(commonjsGlobal.jasmine.getEnv().topSuite(), config);
-
-    return {
-      get: context.get,
-      def: context.def,
-      subject: context.subject
-    };
+    return addInterface(commonjsGlobal.jasmine.getEnv().topSuite(), config);
   }
 };
 
@@ -636,23 +678,15 @@ var mocha$1 = {
       return addInterface$1(rootSuite, config);
     };
 
-    return Object.defineProperties(mocha.interfaces[name], {
-      get: {
-        get: function get$$1() {
-          return commonjsGlobal.get;
-        }
-      },
-      def: {
-        get: function get$$1() {
-          return commonjsGlobal.def;
-        }
-      },
-      subject: {
-        get: function get$$1() {
-          return commonjsGlobal.subject;
-        }
-      }
-    });
+    var getters = ['get', 'def', 'subject', 'sharedExamplesFor', 'includeExamplesFor', 'itBehavesLike'];
+    var defs = getters.reduce(function (all, uiName) {
+      all[uiName] = { get: function get$$1() {
+          return commonjsGlobal[uiName];
+        } };
+      return all;
+    }, {});
+
+    return Object.defineProperties(mocha.interfaces[name], defs);
   }
 };
 
