@@ -610,13 +610,18 @@ function createSuiteTracker$1() {
 
 function addInterface$1(rootSuite, options) {
   var tracker = new options.Tracker({ rootSuite: rootSuite, suiteTracker: createSuiteTracker$1() });
+  var isContextUpdated = false;
 
   rootSuite.afterEach(tracker.cleanUpCurrentContext);
   rootSuite.on('pre-require', function (context) {
-    var ui = _interface(context, tracker, options);
     var describe = context.describe;
 
-    _extends(context, ui);
+    if (!isContextUpdated) {
+      var ui = _interface(context, tracker, options);
+      _extends(context, ui);
+      isContextUpdated = true;
+    }
+
     context.describe = tracker.wrapSuite(describe);
     context.describe.skip = tracker.wrapSuite(describe.skip);
     context.describe.only = tracker.wrapSuite(describe.only);
