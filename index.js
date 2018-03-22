@@ -7,7 +7,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
 
 mocha = mocha && mocha.hasOwnProperty('default') ? mocha['default'] : mocha;
 
-var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+var global$1 = typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
@@ -340,7 +340,7 @@ function itBehavesLike(name) {
     args[_key2 - 1] = arguments[_key2];
   }
 
-  commonjsGlobal.describe('behaves like ' + name, function () {
+  global$1.describe('behaves like ' + name, function () {
     includeExamplesFor.apply(undefined, [name].concat(args));
   });
 }
@@ -558,17 +558,17 @@ var suite_tracker = SuiteTracker;
 function createSuiteTracker() {
   return {
     before: function before(tracker, suite) {
-      commonjsGlobal.beforeAll(tracker.registerSuite.bind(tracker, suite));
-      commonjsGlobal.afterAll(tracker.cleanUpCurrentAndRestorePrevContext);
+      global$1.beforeAll(tracker.registerSuite.bind(tracker, suite));
+      global$1.afterAll(tracker.cleanUpCurrentAndRestorePrevContext);
     },
     after: function after(tracker) {
-      commonjsGlobal.beforeAll(tracker.cleanUpCurrentContext);
+      global$1.beforeAll(tracker.cleanUpCurrentContext);
     }
   };
 }
 
 function addInterface(rootSuite, options) {
-  var context = commonjsGlobal;
+  var context = global$1;
   var tracker = new options.Tracker({ rootSuite: rootSuite, suiteTracker: createSuiteTracker() });
   var ui = _interface(context, tracker, options);
 
@@ -576,7 +576,7 @@ function addInterface(rootSuite, options) {
   context.describe = tracker.wrapSuite(context.describe);
   context.xdescribe = tracker.wrapSuite(context.xdescribe);
   context.fdescribe = tracker.wrapSuite(context.fdescribe);
-  commonjsGlobal.afterEach(tracker.cleanUpCurrentContext);
+  global$1.afterEach(tracker.cleanUpCurrentContext);
 
   return ui;
 }
@@ -587,7 +587,7 @@ var jasmine = {
       Tracker: suite_tracker
     }, options);
 
-    return addInterface(commonjsGlobal.jasmine.getEnv().topSuite(), config);
+    return addInterface(global$1.jasmine.getEnv().topSuite(), config);
   }
 };
 
@@ -645,7 +645,7 @@ var mocha$1 = {
     var getters = ['get', 'def', 'subject', 'sharedExamplesFor', 'includeExamplesFor', 'itBehavesLike'];
     var defs = getters.reduce(function (all, uiName) {
       all[uiName] = { get: function get$$1() {
-          return commonjsGlobal[uiName];
+          return global$1[uiName];
         } };
       return all;
     }, {});
@@ -664,9 +664,9 @@ try {
 
 var ui = void 0;
 
-if (commonjsGlobal.jest) {
+if (global$1.jest) {
   ui = jest; // eslint-disable-line
-} else if (commonjsGlobal.jasmine) {
+} else if (global$1.jasmine) {
   ui = jasmine; // eslint-disable-line
 } else if (Mocha) {
   ui = mocha$1; // eslint-disable-line

@@ -1,5 +1,7 @@
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
+import inject from 'rollup-plugin-inject';
+import { resolve as resolvePath } from 'path';
 
 const MODULE_NAME = 'bdd_lazy_var';
 
@@ -35,7 +37,6 @@ function useSafeDependencies(deps) {
   }
 }
 
-
 export default {
   external: ['mocha', 'jasmine'],
   output: {
@@ -49,7 +50,11 @@ export default {
   plugins: [
     commonjs({
       include: 'lib/**',
-      ignore: []
+      ignoreGlobal: true
+    }),
+    inject({
+      include: 'lib/**',
+      global: resolvePath('./tools/globals/global.js')
     }),
     babel({
       exclude: 'node_modules/**',

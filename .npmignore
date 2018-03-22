@@ -1,5 +1,6 @@
 spec/
 tools/
 doc/
+lib/
 node_modules/
 .*
