@@ -379,8 +379,71 @@ All are bundled as UMD versions.
 * named `subject`s to be more explicit
 * ability to shadow parent's variable
 * variable inheritance with access to parent variables
+* supports typescript
 
 For more information, read [the article on Medium](https://medium.com/@sergiy.stotskiy/lazy-variables-with-mocha-js-d6063503104c#.ceo9jvrzh).
+
+## TypeScript Notes
+
+It's also possible to use `bdd-lazy-var` with TypeScript. The best integrated dialects are `get` and `getter`. To do so, you need either include corresponding definitions in your [tsconfig.json](http://www.typescriptlang.org/docs/handbook/tsconfig-json.html) or use ES6 module system.
+
+<details>
+  <summary>tsconfig.json</summary>
+
+```js
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true
+  },
+  "include": [
+    "src/**/*",
+    "node_modules/bdd-lazy-var/index.d.ts" // for `get('<variableName>')` syntax
+    // or
+    "node_modules/bdd-lazy-var/getter.d.ts" // for `get.<variableName>` syntax
+  ]
+}
+```
+</details>
+
+<details>
+  <summary>ES6 module system</summary>
+
+```js
+import { get, def } from 'bdd-lazy-var'
+// or
+import { get, def } from 'bdd-lazy-var/getter'
+
+describe('My Test', () => {
+  // ....  
+})
+```
+
+In this case TypeScript loads corresponding declarations automatically
+</details>
+
+It's a bit harder to work with `global` dialect. It creates global getters on the fly, so there is no way to let TypeScript know something about these variables, thus you need to `declare` them manually.
+
+<details>
+  <summary>TypeScript and global dialect</summary>
+
+```ts
+import { def } from 'bdd-lazy-var/global'
+
+describe('My Test', () => {
+  declare let $value: number // <-- need to place this declarations manually
+  def('value', () => 5)
+
+  it('equals 5', () => {
+    expect($value).to.equal(5)
+  })
+})
+```
+
+As with other dialects you can either use `import` statements to load typings automatically or add them manually in `tsconfig.json`
+</details>
 
 ## Examples
 
