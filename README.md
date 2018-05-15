@@ -250,10 +250,12 @@ npm install bdd-lazy-var --save-dev
 
 #### Command line
 ```sh
-mocha -u bdd-lazy-var
+mocha -u bdd-lazy-var/global
 ```
 
 #### In JavaScript
+
+See [Using Mocha programatically](https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically)
 
 ```js
 const Mocha = require('mocha');
@@ -262,9 +264,17 @@ const mocha = new Mocha({
   ui: 'bdd-lazy-var/global' // bdd-lazy-var or bdd-lazy-var/getter
 });
 
+mocha.addFile(...)
+mocha.run(...)
+
+// !!! Important the next code should be written in a separate file
 // later you can either use `get` and `def` as global functions
 // or export them from corresponding module
 const { get, def } = require('bdd-lazy-var/global');
+
+describe('Test', () => {
+  // ...
+})
 ```
 
 #### Using karma (via karma-mocha npm package)
@@ -312,12 +322,19 @@ jasmine --helper=spec/*_helper.js
 
 #### In JavaScript
 
+When you want programatically run jasmine
+
 ```js
 require('jasmine-core');
 
+// !!! Important the next code should be written in a separate file
 // later you can either use `get` and `def` as global functions
 // or export them from corresponding module
 const { get, def } = require('bdd-lazy-var/global');
+
+describe('Test', () => {
+  // ...
+})
 ```
 
 #### Using karma (via karma-jasmine npm package)
@@ -368,9 +385,9 @@ const { get, def } = require('bdd-lazy-var/global');
 `bdd-lazy-var` provides 3 different dialects:
 * access variables by referencing `$<variableName>` (the recommended one, available by requiring `bdd-lazy-var/global`)
 * access variables by referencing `get.<variableName>` (more strict, available by requiring `bdd-lazy-var/getter`)
-* access variables by referencing `get('<variableName>')` (the most strict and less readable way, available by requiring `bdd-lazy-var/index`)
+* access variables by referencing `get('<variableName>')` (the most strict and less readable way, available by requiring `bdd-lazy-var`)
 
-All are bundled as UMD versions.
+All are bundled as UMD versions. Each dialect is compiled in a separate file and should be required or provided for testing framework.
 
 ## The Core Features
 * lazy instantiation, allows variable composition
