@@ -18,13 +18,10 @@ module.exports = function(config) {
   config.set({
     frameworks,
     basePath: '..',
-    transports: [ 'xhr-polling', 'polling' ],
-    reporters: [ 'dots' ],
-    port: 9876,
-    logLevel: config.LOG_INFO,
+    reporters: ['dots'],
     autoWatch: false,
     singleRun: true,
-    browsers: [ 'Firefox' ],
+    browsers: ['Firefox'],
     files: frameworks.includes('mocha') ? specs : srcFiles.concat(specs),
     client: {
       mocha: {

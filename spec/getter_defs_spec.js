@@ -1,8 +1,10 @@
-describe('Lazy vars defined as getter on "get" function', function() {
-  function getVar(name) {
-    return get[name];
-  }
+function getVar(name) {
+  return get[name];
+}
 
+includeExamplesFor('Root Lazy Vars', getVar);
+
+describe('Lazy vars defined as getter on "get" function', function() {
   includeExamplesFor('Lazy Vars Interface', getVar);
 
   subject(function() {

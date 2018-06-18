@@ -1,8 +1,10 @@
-describe('Interface with globally defined lazy vars', function() {
-  function getVar(name) {
-    return global['$' + name];
-  }
+function getVar(name) {
+  return global['$' + name];
+}
 
+includeExamplesFor('Root Lazy Vars', getVar);
+
+describe('Interface with globally defined lazy vars', function() {
   includeExamplesFor('Lazy Vars Interface', getVar);
   includeExamplesFor('Default suite tracking', getVar);
 

@@ -288,3 +288,15 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
     });
   });
 });
+
+sharedExamplesFor('Root Lazy Vars', function(getVar) {
+  const varName = `hello.${Date.now()}.${Math.random()}`
+
+  def(varName, function() {
+    return 'world'
+  });
+
+  it('allows to define lazy vars at root level', function() {
+    expect(getVar(varName)).to.equal('world');
+  });
+});
