@@ -41,21 +41,6 @@ function optional(name) { try { return require(name) } catch(e) {} }
     };
   }();
 
-  var defineProperty = function (obj, key, value) {
-    if (key in obj) {
-      Object.defineProperty(obj, key, {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    } else {
-      obj[key] = value;
-    }
-
-    return obj;
-  };
-
   var _extends = Object.assign || function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
@@ -70,77 +55,56 @@ function optional(name) { try { return require(name) } catch(e) {} }
     return target;
   };
 
-  var toArray = function (arr) {
-    return Array.isArray(arr) ? arr : Array.from(arr);
-  };
-
-  var toConsumableArray = function (arr) {
-    if (Array.isArray(arr)) {
-      for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-      return arr2;
-    } else {
-      return Array.from(arr);
-    }
-  };
-
   var LAZY_VARS_FIELD = symbol.for('__lazyVars');
 
   var VariableMetadata = function () {
     function VariableMetadata(name, definition, metadata) {
+      var _names;
+
       classCallCheck(this, VariableMetadata);
 
       this.value = definition;
       this.parent = metadata;
-      this.names = defineProperty({}, name, true);
+      this.names = (_names = {}, _names[name] = true, _names);
     }
 
-    createClass(VariableMetadata, [{
-      key: 'addName',
-      value: function addName(name) {
-        this.names[name] = true;
-        return this;
-      }
-    }, {
-      key: 'isNamedAs',
-      value: function isNamedAs(name) {
-        return this.names[name];
-      }
-    }, {
-      key: 'evaluate',
-      value: function evaluate() {
-        return typeof this.value === 'function' ? this.value() : this.value;
-      }
-    }]);
+    VariableMetadata.prototype.addName = function addName(name) {
+      this.names[name] = true;
+      return this;
+    };
+
+    VariableMetadata.prototype.isNamedAs = function isNamedAs(name) {
+      return this.names[name];
+    };
+
+    VariableMetadata.prototype.evaluate = function evaluate() {
+      return typeof this.value === 'function' ? this.value() : this.value;
+    };
+
     return VariableMetadata;
   }();
 
   var Metadata = function () {
-    createClass(Metadata, null, [{
-      key: 'of',
-      value: function of(context, varName) {
-        var metadata = context[LAZY_VARS_FIELD];
+    Metadata.of = function of(context, varName) {
+      var metadata = context[LAZY_VARS_FIELD];
 
-        return varName && metadata ? metadata.defs[varName] : metadata;
-      }
-    }, {
-      key: 'ensureDefinedOn',
-      value: function ensureDefinedOn(context) {
-        if (!context.hasOwnProperty(LAZY_VARS_FIELD)) {
-          context[LAZY_VARS_FIELD] = new Metadata();
-        }
+      return varName && metadata ? metadata.defs[varName] : metadata;
+    };
 
-        return context[LAZY_VARS_FIELD];
+    Metadata.ensureDefinedOn = function ensureDefinedOn(context) {
+      if (!context.hasOwnProperty(LAZY_VARS_FIELD)) {
+        context[LAZY_VARS_FIELD] = new Metadata();
       }
-    }, {
-      key: 'setVirtual',
-      value: function setVirtual(context, metadata) {
-        var virtualMetadata = Object.create(metadata);
 
-        virtualMetadata.values = {};
-        context[LAZY_VARS_FIELD] = virtualMetadata;
-      }
-    }]);
+      return context[LAZY_VARS_FIELD];
+    };
+
+    Metadata.setVirtual = function setVirtual(context, metadata) {
+      var virtualMetadata = Object.create(metadata);
+
+      virtualMetadata.values = {};
+      context[LAZY_VARS_FIELD] = virtualMetadata;
+    };
 
     function Metadata() {
       classCallCheck(this, Metadata);
@@ -151,65 +115,57 @@ function optional(name) { try { return require(name) } catch(e) {} }
       this.defined = false;
     }
 
-    createClass(Metadata, [{
-      key: 'getVar',
-      value: function getVar(name) {
-        if (!this.values.hasOwnProperty(name) && this.defs[name]) {
-          this.hasValues = true;
-          this.values[name] = this.evaluate(name);
-        }
+    Metadata.prototype.getVar = function getVar(name) {
+      if (!this.values.hasOwnProperty(name) && this.defs[name]) {
+        this.hasValues = true;
+        this.values[name] = this.evaluate(name);
+      }
 
-        return this.values[name];
-      }
-    }, {
-      key: 'evaluate',
-      value: function evaluate(name) {
-        return this.defs[name].evaluate();
-      }
-    }, {
-      key: 'addChild',
-      value: function addChild(child) {
-        child.defs = _extends(Object.create(this.defs), child.defs);
-        child.parent = this.defined ? this : this.parent;
-      }
-    }, {
-      key: 'addVar',
-      value: function addVar(name, definition) {
-        if (this.defs.hasOwnProperty(name)) {
-          throw new Error('Cannot define "' + name + '" variable twice in the same suite.');
-        }
+      return this.values[name];
+    };
 
-        this.defined = true;
-        this.defs[name] = new VariableMetadata(name, definition, this);
+    Metadata.prototype.evaluate = function evaluate(name) {
+      return this.defs[name].evaluate();
+    };
 
-        return this;
-      }
-    }, {
-      key: 'addAliasFor',
-      value: function addAliasFor(name, aliasName) {
-        this.defs[aliasName] = this.defs[name].addName(aliasName);
-      }
-    }, {
-      key: 'releaseVars',
-      value: function releaseVars() {
-        if (this.hasValues) {
-          this.values = {};
-          this.hasValues = false;
-        }
-      }
-    }, {
-      key: 'lookupMetadataFor',
-      value: function lookupMetadataFor(varName) {
-        var varMeta = this.defs[varName];
-        var definedIn = varMeta.parent;
+    Metadata.prototype.addChild = function addChild(child) {
+      child.defs = _extends(Object.create(this.defs), child.defs);
+      child.parent = this.defined ? this : this.parent;
+    };
 
-        if (!varMeta || !definedIn.parent.defs[varName]) {
-          throw new Error('Unknown parent variable "' + varName + '".');
-        }
-
-        return definedIn.parent;
+    Metadata.prototype.addVar = function addVar(name, definition) {
+      if (this.defs.hasOwnProperty(name)) {
+        throw new Error('Cannot define "' + name + '" variable twice in the same suite.');
       }
-    }]);
+
+      this.defined = true;
+      this.defs[name] = new VariableMetadata(name, definition, this);
+
+      return this;
+    };
+
+    Metadata.prototype.addAliasFor = function addAliasFor(name, aliasName) {
+      this.defs[aliasName] = this.defs[name].addName(aliasName);
+    };
+
+    Metadata.prototype.releaseVars = function releaseVars() {
+      if (this.hasValues) {
+        this.values = {};
+        this.hasValues = false;
+      }
+    };
+
+    Metadata.prototype.lookupMetadataFor = function lookupMetadataFor(varName) {
+      var varMeta = this.defs[varName];
+      var definedIn = varMeta.parent;
+
+      if (!varMeta || !definedIn.parent.defs[varName]) {
+        throw new Error('Unknown parent variable "' + varName + '".');
+      }
+
+      return definedIn.parent;
+    };
+
     return Metadata;
   }();
 
@@ -224,39 +180,34 @@ function optional(name) { try { return require(name) } catch(e) {} }
   };
 
   var Variable = function () {
-    createClass(Variable, null, [{
-      key: 'allocate',
-      value: function allocate(varName, options) {
-        var variable = new this(varName, options.in);
+    Variable.allocate = function allocate(varName, options) {
+      var variable = new this(varName, options.in);
 
-        return variable.addToStack();
+      return variable.addToStack();
+    };
+
+    Variable.evaluate = function evaluate(varName, options) {
+      if (!options.in) {
+        throw new Error('It looke like you are trying to evaluate "' + varName + '" too early. Evaluation context is undefined');
       }
-    }, {
-      key: 'evaluate',
-      value: function evaluate(varName, options) {
-        if (!options.in) {
-          throw new Error('It looke like you are trying to evaluate "' + varName + '" too early. Evaluation context is undefined');
-        }
 
-        var variable = Variable.fromStack(options.in);
+      var variable = Variable.fromStack(options.in);
 
-        if (variable.isSame(varName)) {
-          return variable.valueInParentContext(varName);
-        }
-
-        try {
-          variable = Variable.allocate(varName, options);
-          return variable.value();
-        } finally {
-          variable.pullFromStack();
-        }
+      if (variable.isSame(varName)) {
+        return variable.valueInParentContext(varName);
       }
-    }, {
-      key: 'fromStack',
-      value: function fromStack(context) {
-        return last(context[CURRENTLY_RETRIEVED_VAR_FIELD]) || Variable.EMPTY;
+
+      try {
+        variable = Variable.allocate(varName, options);
+        return variable.value();
+      } finally {
+        variable.pullFromStack();
       }
-    }]);
+    };
+
+    Variable.fromStack = function fromStack(context) {
+      return last(context[CURRENTLY_RETRIEVED_VAR_FIELD]) || Variable.EMPTY;
+    };
 
     function Variable(varName, context) {
       classCallCheck(this, Variable);
@@ -266,42 +217,36 @@ function optional(name) { try { return require(name) } catch(e) {} }
       this.evaluationMeta = context ? Metadata$1.of(context) : null;
     }
 
-    createClass(Variable, [{
-      key: 'isSame',
-      value: function isSame(anotherVarName) {
-        return this.name && (this.name === anotherVarName || Metadata$1.of(this.context, this.name).isNamedAs(anotherVarName));
-      }
-    }, {
-      key: 'value',
-      value: function value() {
-        return this.evaluationMeta.getVar(this.name);
-      }
-    }, {
-      key: 'addToStack',
-      value: function addToStack() {
-        this.context[CURRENTLY_RETRIEVED_VAR_FIELD] = this.context[CURRENTLY_RETRIEVED_VAR_FIELD] || [];
-        this.context[CURRENTLY_RETRIEVED_VAR_FIELD].push(this);
+    Variable.prototype.isSame = function isSame(anotherVarName) {
+      return this.name && (this.name === anotherVarName || Metadata$1.of(this.context, this.name).isNamedAs(anotherVarName));
+    };
 
-        return this;
-      }
-    }, {
-      key: 'pullFromStack',
-      value: function pullFromStack() {
-        this.context[CURRENTLY_RETRIEVED_VAR_FIELD].pop();
-      }
-    }, {
-      key: 'valueInParentContext',
-      value: function valueInParentContext(varOrAliasName) {
-        var meta = this.evaluationMeta;
+    Variable.prototype.value = function value() {
+      return this.evaluationMeta.getVar(this.name);
+    };
 
-        try {
-          this.evaluationMeta = meta.lookupMetadataFor(varOrAliasName);
-          return this.evaluationMeta.evaluate(varOrAliasName);
-        } finally {
-          this.evaluationMeta = meta;
-        }
+    Variable.prototype.addToStack = function addToStack() {
+      this.context[CURRENTLY_RETRIEVED_VAR_FIELD] = this.context[CURRENTLY_RETRIEVED_VAR_FIELD] || [];
+      this.context[CURRENTLY_RETRIEVED_VAR_FIELD].push(this);
+
+      return this;
+    };
+
+    Variable.prototype.pullFromStack = function pullFromStack() {
+      this.context[CURRENTLY_RETRIEVED_VAR_FIELD].pop();
+    };
+
+    Variable.prototype.valueInParentContext = function valueInParentContext(varOrAliasName) {
+      var meta = this.evaluationMeta;
+
+      try {
+        this.evaluationMeta = meta.lookupMetadataFor(varOrAliasName);
+        return this.evaluationMeta.evaluate(varOrAliasName);
+      } finally {
+        this.evaluationMeta = meta;
       }
-    }]);
+    };
+
     return Variable;
   }();
 
@@ -354,12 +299,12 @@ function optional(name) { try { return require(name) } catch(e) {} }
 
 
   var _interface = function _interface(context, tracker, options) {
-    var get$$1 = function get$$1(varName) {
+    var get = function get(varName) {
       return variable.evaluate(varName, { in: tracker.currentContext });
     };
 
-    get$$1.definitionOf = get$$1.variable = function (varName) {
-      return get$$1.bind(null, varName);
+    get.definitionOf = get.variable = function (varName) {
+      return get.bind(null, varName);
     };
 
     function def(varName, definition) {
@@ -371,9 +316,8 @@ function optional(name) { try { return require(name) } catch(e) {} }
         return;
       }
 
-      var _varName = toArray(varName),
-          name = _varName[0],
-          aliases = _varName.slice(1);
+      var name = varName[0],
+          aliases = varName.slice(1);
 
       def(name, definition);
 
@@ -401,7 +345,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
         return def([name, 'subject'], definition);
       }
 
-      return get$$1('subject');
+      return get('subject');
     }
 
     function runHook(name) {
@@ -410,14 +354,14 @@ function optional(name) { try { return require(name) } catch(e) {} }
           args[_key2 - 1] = arguments[_key2];
         }
 
-        options[name].apply(options, toConsumableArray(args.concat(context)));
+        options[name].apply(options, args.concat(context));
       }
     }
 
     return {
       subject: subject,
       def: def,
-      get: get$$1,
+      get: get,
       sharedExamplesFor: sharedExamplesFor$1,
       includeExamplesFor: includeExamplesFor$1,
       itBehavesLike: itBehavesLike$1
@@ -438,102 +382,92 @@ function optional(name) { try { return require(name) } catch(e) {} }
       this.cleanUpCurrentAndRestorePrevContext = this.cleanUpCurrentAndRestorePrevContext.bind(this);
     }
 
-    createClass(SuiteTracker, [{
-      key: 'wrapSuite',
-      value: function wrapSuite(describe) {
-        var tracker = this;
+    SuiteTracker.prototype.wrapSuite = function wrapSuite(describe) {
+      var tracker = this;
 
-        return function detectSuite(title, defineTests) {
-          for (var _len = arguments.length, suiteArgs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-            suiteArgs[_key - 2] = arguments[_key];
+      return function detectSuite(title, defineTests) {
+        for (var _len = arguments.length, suiteArgs = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+          suiteArgs[_key - 2] = arguments[_key];
+        }
+
+        return describe.apply(undefined, [title, function defineSuite() {
+          for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+            args[_key2] = arguments[_key2];
           }
 
-          return describe.apply(undefined, [title, function defineSuite() {
-            for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-              args[_key2] = arguments[_key2];
-            }
+          tracker.trackSuite(this, defineTests, args);
+        }].concat(suiteArgs));
+      };
+    };
 
-            tracker.trackSuite(this, defineTests, args);
-          }].concat(suiteArgs));
-        };
-      }
-    }, {
-      key: 'trackSuite',
-      value: function trackSuite(suite, defineTests, args) {
-        var previousDefinedSuite = this.state.currentlyDefinedSuite;
+    SuiteTracker.prototype.trackSuite = function trackSuite(suite, defineTests, args) {
+      var previousDefinedSuite = this.state.currentlyDefinedSuite;
 
-        this.state.currentlyDefinedSuite = suite;
-        this.execute(defineTests, suite, args);
-        this.state.currentlyDefinedSuite = previousDefinedSuite;
-        this.suites.push(suite);
+      this.state.currentlyDefinedSuite = suite;
+      this.execute(defineTests, suite, args);
+      this.state.currentlyDefinedSuite = previousDefinedSuite;
+      this.suites.push(suite);
 
-        if (this.isRoot(suite)) {
-          this.linkParentToChildMetadataAndFlush();
-        }
+      if (this.isRoot(suite)) {
+        this.linkParentToChildMetadataAndFlush();
       }
-    }, {
-      key: 'execute',
-      value: function execute(defineTests, suite, args) {
-        this.suiteTracker.before(this, suite);
-        defineTests.apply(suite, args);
+    };
 
-        if (Metadata$3.of(suite)) {
-          this.suiteTracker.after(this, suite);
-        }
-      }
-    }, {
-      key: 'isRoot',
-      value: function isRoot(suite) {
-        return !(suite.parent ? suite.parent.parent : suite.parentSuite.parentSuite);
-      }
-    }, {
-      key: 'linkParentToChildMetadataAndFlush',
-      value: function linkParentToChildMetadataAndFlush() {
-        this.suites.reverse().forEach(this.linkMetadataOf, this);
-        this.suites.length = 0;
-      }
-    }, {
-      key: 'linkMetadataOf',
-      value: function linkMetadataOf(suite) {
-        var metadata$$1 = Metadata$3.of(suite);
-        var parentMetadata = Metadata$3.of(suite.parent || suite.parentSuite);
+    SuiteTracker.prototype.execute = function execute(defineTests, suite, args) {
+      this.suiteTracker.before(this, suite);
+      defineTests.apply(suite, args);
 
-        if (!parentMetadata) {
-          return;
-        }
+      if (Metadata$3.of(suite)) {
+        this.suiteTracker.after(this, suite);
+      }
+    };
 
-        if (metadata$$1) {
-          parentMetadata.addChild(metadata$$1);
-        } else {
-          Metadata$3.setVirtual(suite, parentMetadata);
-        }
-      }
-    }, {
-      key: 'registerSuite',
-      value: function registerSuite(context) {
-        this.state.contexts.push(context);
-      }
-    }, {
-      key: 'cleanUp',
-      value: function cleanUp(context) {
-        var metadata$$1 = Metadata$3.of(context);
+    SuiteTracker.prototype.isRoot = function isRoot(suite) {
+      return !(suite.parent ? suite.parent.parent : suite.parentSuite.parentSuite);
+    };
 
-        if (metadata$$1) {
-          metadata$$1.releaseVars();
-        }
+    SuiteTracker.prototype.linkParentToChildMetadataAndFlush = function linkParentToChildMetadataAndFlush() {
+      this.suites.reverse().forEach(this.linkMetadataOf, this);
+      this.suites.length = 0;
+    };
+
+    SuiteTracker.prototype.linkMetadataOf = function linkMetadataOf(suite) {
+      var metadata$$1 = Metadata$3.of(suite);
+      var parentMetadata = Metadata$3.of(suite.parent || suite.parentSuite);
+
+      if (!parentMetadata) {
+        return;
       }
-    }, {
-      key: 'cleanUpCurrentContext',
-      value: function cleanUpCurrentContext() {
-        this.cleanUp(this.currentContext);
+
+      if (metadata$$1) {
+        parentMetadata.addChild(metadata$$1);
+      } else {
+        Metadata$3.setVirtual(suite, parentMetadata);
       }
-    }, {
-      key: 'cleanUpCurrentAndRestorePrevContext',
-      value: function cleanUpCurrentAndRestorePrevContext() {
-        this.cleanUpCurrentContext();
-        this.state.contexts.pop();
+    };
+
+    SuiteTracker.prototype.registerSuite = function registerSuite(context) {
+      this.state.contexts.push(context);
+    };
+
+    SuiteTracker.prototype.cleanUp = function cleanUp(context) {
+      var metadata$$1 = Metadata$3.of(context);
+
+      if (metadata$$1) {
+        metadata$$1.releaseVars();
       }
-    }, {
+    };
+
+    SuiteTracker.prototype.cleanUpCurrentContext = function cleanUpCurrentContext() {
+      this.cleanUp(this.currentContext);
+    };
+
+    SuiteTracker.prototype.cleanUpCurrentAndRestorePrevContext = function cleanUpCurrentAndRestorePrevContext() {
+      this.cleanUpCurrentContext();
+      this.state.contexts.pop();
+    };
+
+    createClass(SuiteTracker, [{
       key: 'currentContext',
       get: function get$$1() {
         return this.state.contexts[this.state.contexts.length - 1];

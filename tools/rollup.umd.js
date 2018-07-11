@@ -59,7 +59,11 @@ export default {
     babel({
       exclude: 'node_modules/**',
       presets: [
-        ['es2015', { modules: false }]
+        ['env', {
+          modules: false,
+          loose: true,
+          browsers: ['last 3 versions', 'safari >= 7']
+        }]
       ],
       plugins: [
         'external-helpers',
