@@ -78,7 +78,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
     };
 
     VariableMetadata.prototype.evaluate = function evaluate() {
-      return typeof this.value === 'function' ? this.value() : this.value;
+      return typeof this.value === 'function' && !this.value.passBack ? this.value() : this.value;
     };
 
     return VariableMetadata;
@@ -254,48 +254,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
 
   var variable = Variable;
 
-  var SHARED_EXAMPLES = {};
-
-  function sharedExamplesFor(name, defs) {
-    if (SHARED_EXAMPLES[name]) {
-      throw new Error('Attempt to override "' + name + '" shared example');
-    }
-
-    SHARED_EXAMPLES[name] = defs;
-  }
-
-  function includeExamplesFor(name) {
-    if (!SHARED_EXAMPLES.hasOwnProperty(name)) {
-      throw new Error('Attempt to include not defined shared behavior "' + name + '"');
-    }
-
-    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-
-    SHARED_EXAMPLES[name].apply(null, args);
-  }
-
-  function itBehavesLike(name) {
-    for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-      args[_key2 - 1] = arguments[_key2];
-    }
-
-    global$1.describe('behaves like ' + name, function () {
-      includeExamplesFor.apply(undefined, [name].concat(args));
-    });
-  }
-
-  var shared_behavior = {
-    sharedExamplesFor: sharedExamplesFor,
-    includeExamplesFor: includeExamplesFor,
-    itBehavesLike: itBehavesLike
-  };
-
   var Metadata$2 = metadata.Metadata;
-  var sharedExamplesFor$1 = shared_behavior.sharedExamplesFor,
-      includeExamplesFor$1 = shared_behavior.includeExamplesFor,
-      itBehavesLike$1 = shared_behavior.itBehavesLike;
 
 
   var _interface = function _interface(context, tracker, options) {
@@ -312,7 +271,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
 
       if (!Array.isArray(varName)) {
         Metadata$2.ensureDefinedOn(suite).addVar(varName, definition);
-        runHook('onDefineVariable', suite, varName);
+        runHook(definition.passBack ? null : 'onDefineVariable', suite, varName);
         return;
       }
 
@@ -348,13 +307,43 @@ function optional(name) { try { return require(name) } catch(e) {} }
       return get('subject');
     }
 
-    function runHook(name) {
-      if (typeof options[name] === 'function') {
-        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-          args[_key2 - 1] = arguments[_key2];
-        }
+    var EXAMPLES_PREFIX = 'SHARED';
+    function sharedExamplesFor(name, defs) {
+      try {
+        defs.passBack = true;
+        def(EXAMPLES_PREFIX + ':' + name, defs);
+      } catch (error) {
+        throw new Error('Attempt to override "' + name + '" shared example');
+      }
+    }
 
-        options[name].apply(options, args.concat(context));
+    function includeExamplesFor(name) {
+      var examples = get(EXAMPLES_PREFIX + ':' + name);
+
+      if (!examples) {
+        throw new Error('Attempt to include not defined shared behavior "' + name + '"');
+      }
+
+      for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+        args[_key2 - 1] = arguments[_key2];
+      }
+
+      return examples.apply(undefined, args);
+    }
+
+    function itBehavesLike(name) {
+      for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+        args[_key3 - 1] = arguments[_key3];
+      }
+
+      global$1.describe('behaves like ' + name, function () {
+        includeExamplesFor.apply(undefined, [name].concat(args));
+      });
+    }
+
+    function runHook(name, suite, varName) {
+      if (name && typeof options[name] === 'function') {
+        options[name](suite, varName, context);
       }
     }
 
@@ -362,9 +351,9 @@ function optional(name) { try { return require(name) } catch(e) {} }
       subject: subject,
       def: def,
       get: get,
-      sharedExamplesFor: sharedExamplesFor$1,
-      includeExamplesFor: includeExamplesFor$1,
-      itBehavesLike: itBehavesLike$1
+      sharedExamplesFor: sharedExamplesFor,
+      includeExamplesFor: includeExamplesFor,
+      itBehavesLike: itBehavesLike
     };
   };
 
