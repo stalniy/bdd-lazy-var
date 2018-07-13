@@ -80,7 +80,7 @@
     "build.global-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_global_var.js -o global.js",
     "build.getter-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_getter_var.js -o getter.js",
     "build": "npm run build.ui && npm run build.global-ui && npm run build.getter-ui",
-    "lint": "eslint lib"
+    "lint": "eslint --fix lib"
   },
   "jest": {
     "testMatch": [
