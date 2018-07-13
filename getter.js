@@ -56,6 +56,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
   };
 
   var LAZY_VARS_FIELD = symbol.for('__lazyVars');
+  var EXAMPLES_PREFIX = '__SH_EX:';
 
   var VariableMetadata = function () {
     function VariableMetadata(name, definition, metadata) {
@@ -78,7 +79,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
     };
 
     VariableMetadata.prototype.evaluate = function evaluate() {
-      return typeof this.value === 'function' && !this.value.passBack ? this.value() : this.value;
+      return typeof this.value === 'function' ? this.value() : this.value;
     };
 
     return VariableMetadata;
@@ -97,13 +98,6 @@ function optional(name) { try { return require(name) } catch(e) {} }
       }
 
       return context[LAZY_VARS_FIELD];
-    };
-
-    Metadata.setVirtual = function setVirtual(context, metadata) {
-      var virtualMetadata = Object.create(metadata);
-
-      virtualMetadata.values = {};
-      context[LAZY_VARS_FIELD] = virtualMetadata;
     };
 
     function Metadata() {
@@ -166,6 +160,26 @@ function optional(name) { try { return require(name) } catch(e) {} }
       return definedIn.parent;
     };
 
+    Metadata.prototype.addExamplesFor = function addExamplesFor(name, definition) {
+      var examplesName = EXAMPLES_PREFIX + name;
+
+      if (this.defs.hasOwnProperty(examplesName)) {
+        throw new Error('Attempt to override "' + name + '" shared example');
+      }
+
+      return this.addVar(examplesName, definition);
+    };
+
+    Metadata.prototype.runExamplesFor = function runExamplesFor(name, args) {
+      var examples = this.defs[EXAMPLES_PREFIX + name];
+
+      if (!examples) {
+        throw new Error('Attempt to include not defined shared behavior "' + name + '"');
+      }
+
+      return examples.value.apply(examples, args);
+    };
+
     return Metadata;
   }();
 
@@ -222,7 +236,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
     };
 
     Variable.prototype.value = function value() {
-      return this.evaluationMeta.getVar(this.name);
+      return this.evaluationMeta && this.evaluationMeta.getVar(this.name);
     };
 
     Variable.prototype.addToStack = function addToStack() {
@@ -271,7 +285,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
 
       if (!Array.isArray(varName)) {
         Metadata$2.ensureDefinedOn(suite).addVar(varName, definition);
-        runHook(definition.passBack ? null : 'onDefineVariable', suite, varName);
+        runHook('onDefineVariable', suite, varName);
         return;
       }
 
@@ -307,28 +321,16 @@ function optional(name) { try { return require(name) } catch(e) {} }
       return get('subject');
     }
 
-    var EXAMPLES_PREFIX = 'SHARED';
     function sharedExamplesFor(name, defs) {
-      try {
-        defs.passBack = true;
-        def(EXAMPLES_PREFIX + ':' + name, defs);
-      } catch (error) {
-        throw new Error('Attempt to override "' + name + '" shared example');
-      }
+      Metadata$2.ensureDefinedOn(tracker.currentlyDefinedSuite).addExamplesFor(name, defs);
     }
 
     function includeExamplesFor(name) {
-      var examples = get(EXAMPLES_PREFIX + ':' + name);
-
-      if (!examples) {
-        throw new Error('Attempt to include not defined shared behavior "' + name + '"');
-      }
-
       for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
         args[_key2 - 1] = arguments[_key2];
       }
 
-      return examples.apply(undefined, args);
+      Metadata$2.ensureDefinedOn(tracker.currentlyDefinedSuite).runExamplesFor(name, args);
     }
 
     function itBehavesLike(name) {
@@ -336,8 +338,9 @@ function optional(name) { try { return require(name) } catch(e) {} }
         args[_key3 - 1] = arguments[_key3];
       }
 
-      global$1.describe('behaves like ' + name, function () {
-        includeExamplesFor.apply(undefined, [name].concat(args));
+      context.describe('behaves like ' + name, function () {
+        args.unshift(name);
+        includeExamplesFor.apply(tracker.currentlyDefinedSuite, args);
       });
     }
 
@@ -392,13 +395,18 @@ function optional(name) { try { return require(name) } catch(e) {} }
     SuiteTracker.prototype.trackSuite = function trackSuite(suite, defineTests, args) {
       var previousDefinedSuite = this.state.currentlyDefinedSuite;
 
+      this.defineMetaFor(suite);
       this.state.currentlyDefinedSuite = suite;
       this.execute(defineTests, suite, args);
       this.state.currentlyDefinedSuite = previousDefinedSuite;
-      this.suites.push(suite);
+    };
 
-      if (this.isRoot(suite)) {
-        this.linkParentToChildMetadataAndFlush();
+    SuiteTracker.prototype.defineMetaFor = function defineMetaFor(suite) {
+      var meta = Metadata$3.ensureDefinedOn(suite);
+      var parentMeta = Metadata$3.of(suite.parent || suite.parentSuite);
+
+      if (parentMeta) {
+        parentMeta.addChild(meta);
       }
     };
 
@@ -413,26 +421,6 @@ function optional(name) { try { return require(name) } catch(e) {} }
 
     SuiteTracker.prototype.isRoot = function isRoot(suite) {
       return !(suite.parent ? suite.parent.parent : suite.parentSuite.parentSuite);
-    };
-
-    SuiteTracker.prototype.linkParentToChildMetadataAndFlush = function linkParentToChildMetadataAndFlush() {
-      this.suites.reverse().forEach(this.linkMetadataOf, this);
-      this.suites.length = 0;
-    };
-
-    SuiteTracker.prototype.linkMetadataOf = function linkMetadataOf(suite) {
-      var metadata$$1 = Metadata$3.of(suite);
-      var parentMetadata = Metadata$3.of(suite.parent || suite.parentSuite);
-
-      if (!parentMetadata) {
-        return;
-      }
-
-      if (metadata$$1) {
-        parentMetadata.addChild(metadata$$1);
-      } else {
-        Metadata$3.setVirtual(suite, parentMetadata);
-      }
     };
 
     SuiteTracker.prototype.registerSuite = function registerSuite(context) {
