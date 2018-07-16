@@ -71,7 +71,7 @@ Switching over to this pattern has yielded a significant amount of benefits for 
 
 ### No more global leaks
 
-Because lazy vars are cleared after each test, we didn't have to worry about test pollution any more. This helped ensure isolation between our tests, making them a lot more reliable.
+Because lazy vars are cleared after each test, we didn't have to worry about test pollution anymore. This helped ensure isolation between our tests, making them a lot more reliable.
 
 ### Clear meaning
 
@@ -122,6 +122,9 @@ I prefer to be more explicit in doing this, that's why created few helper method
 * `sharedExamplesFor` - defines a set of reusable tests. When you call this function, it just stores your tests
 * `includeExamplesFor` - runs previously defined examples in current context (i.e., in current `describe`)
 * `itBehavesLike` - runs defined examples in nested context (i.e., in nested `describe`)
+
+`sharedExamplesFor` defines shared examples in the scope of the currently defining suite.
+If you call this function outside `describe` (or `context`) it defines shared examples globally.
 
 **WARNING**: files containing shared examples must be loaded before the files that
 use them.
@@ -205,7 +208,6 @@ so you can rely on variable name, as it was done with `subject` in previous exam
 * you can pass variable definition using `get.variable` helper
 
 ```js
-
 sharedExamplesFor('a collection', (collection) => {
   def('collection', collection)
 
@@ -238,6 +240,40 @@ describe('Map', () => {
 ```
 </details>
 
+## Shortcuts
+
+Very often we want to declare several test cases which tests subject's field or subejct's behavior.
+To do this quickly you can use `its` or `it`:
+
+<details>
+  <summary>`it` and `its` shortcuts</summary>
+
+```js
+describe('Array', () => {
+  subject(() => ({
+    items: [1, 2, 3],
+    name: 'John'
+  }))
+
+  its('items.length', () => is.expected.to.equal(3)) // i.e. expect($subject.items.length).to.equal(3)
+  its('name', () => is.expected.to.equal('John')) // i.e. expect($subject.name).to.equal('John')
+
+  // i.e. expect($subject).to.have.property('items').which.has.length(3)
+  it(() => is.expected.to.have.property('items').which.has.length(3))
+})
+```
+
+Also it generates messages for you based on passed in function body. The example above reports:
+
+```sh
+  Array
+    ✓ is expected to have property('items') which has length(3)
+    items.length
+      ✓ is expected to equal(3)
+    name
+      ✓ is expected to equal('John')
+```
+</details>
 
 ## Installation
 
@@ -434,7 +470,7 @@ import { get, def } from 'bdd-lazy-var'
 import { get, def } from 'bdd-lazy-var/getter'
 
 describe('My Test', () => {
-  // ....  
+  // ....
 })
 ```
 
