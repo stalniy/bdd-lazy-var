@@ -280,11 +280,37 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
         });
       });
 
-      describe('suite that calls parent variable', function () {
+      describe('suite that calls parent variable', function() {
         it('gets the correct variable', function() {
           expect(getVar('subject')).to.be.true;
         });
       });
+    });
+  });
+
+  describe('`its`', function() {
+    subject(function() {
+      return {
+        value: 5,
+        nested: {
+          value: 10
+        },
+        getName() {
+          return 'John'
+        }
+      };
+    });
+
+    its('value', function() {
+      is.expected.to.equal(getVar('subject').value);
+    });
+
+    its('getName', function() {
+      is.expected.to.equal(getVar('subject').getName());
+    });
+
+    its('nested.value', function() {
+      is.expected.to.equal(getVar('subject').nested.value);
     });
   });
 });

@@ -268,6 +268,23 @@ function optional(name) { try { return require(name) } catch(e) {} }
 
   var variable = Variable;
 
+  var parse_message = function parseMessage(fn) {
+    var matches = fn.toString().match(/is\.expected\.(\s+(?=\.)|.)+/g);
+
+    if (!matches) {
+      return '';
+    }
+
+    var prefixLength = 'is.expected.'.length;
+    var body = matches.reduce(function (message, chunk) {
+      return message.concat(chunk.trim().slice(prefixLength).replace(/[\s.]+/g, ' ').replace(/([a-z])([A-Z])/g, function (_, before, letter) {
+        return before + ' ' + letter.toLowerCase();
+      }).replace(/ and /g, ', '));
+    }, []);
+
+    return 'is expected ' + body.join(', ');
+  };
+
   var Metadata$2 = metadata.Metadata;
 
 
@@ -344,16 +361,43 @@ function optional(name) { try { return require(name) } catch(e) {} }
       });
     }
 
+    function its(prop, messageOrAssert, fn) {
+      var _ref = typeof messageOrAssert === 'function' ? [parse_message(messageOrAssert), messageOrAssert] : [messageOrAssert, fn],
+          message = _ref[0],
+          assert = _ref[1];
+
+      return context.describe(prop, function () {
+        def('__itsSubject__', function () {
+          return prop.split('.').reduce(function (object, field) {
+            var value = object[field];
+
+            return typeof value === 'function' ? object[field]() : value;
+          }, subject());
+        });
+
+        context.it(message || 'is correct', assert);
+      });
+    }
+
     function runHook(name, suite, varName) {
       if (name && typeof options[name] === 'function') {
         options[name](suite, varName, context);
       }
     }
 
+    var is = {
+      get expected() {
+        var name = Metadata$2.of(tracker.currentContext, '__itsSubject__') ? '__itsSubject__' : 'subject';
+        return context.expect(get(name));
+      }
+    };
+
     return {
       subject: subject,
       def: def,
       get: get,
+      its: its,
+      is: is,
       sharedExamplesFor: sharedExamplesFor,
       includeExamplesFor: includeExamplesFor,
       itBehavesLike: itBehavesLike
@@ -547,7 +591,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
         return addInterface$1(rootSuite, config);
       };
 
-      var getters = ['get', 'def', 'subject', 'sharedExamplesFor', 'includeExamplesFor', 'itBehavesLike'];
+      var getters = ['get', 'def', 'subject', 'its', 'is', 'sharedExamplesFor', 'includeExamplesFor', 'itBehavesLike'];
       var defs = getters.reduce(function (all, uiName) {
         all[uiName] = { get: function get$$1() {
             return global$1[uiName];
@@ -578,7 +622,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
   }
 
   if (!ui) {
-    throw new Error('\n    Unable to detect testing framework. Make sure that\n      * jasmine or mocha is installed\n      * bdd-lazy-var is included after "jasmine" or "mocha"\n  ');
+    throw new Error('\n    Unable to detect testing framework. Make sure that\n      * jest, jasmine or mocha is installed\n      * bdd-lazy-var is included after "jasmine" or "mocha"\n  ');
   }
 
   var _interface$1 = ui;
