@@ -379,6 +379,29 @@ function optional(name) { try { return require(name) } catch(e) {} }
       });
     }
 
+    var test = context.it;
+    function it() {
+      for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+        args[_key4] = arguments[_key4];
+      }
+
+      if (typeof args[0] === 'function') {
+        args.unshift(parse_message(args[0]));
+        var assert = args[1];
+        // TODO: wrapper function can be removed when https://github.com/facebook/jest/issues/6516 fixed
+        args[1] = function testWrapper() {
+          for (var _len5 = arguments.length, testArgs = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+            testArgs[_key5] = arguments[_key5];
+          }
+
+          var value = assert.apply(this, testArgs);
+          return value && typeof value.then === 'function' ? value : undefined;
+        };
+      }
+
+      return test.apply(undefined, args);
+    }
+
     function runHook(name, suite, varName) {
       if (name && typeof options[name] === 'function') {
         options[name](suite, varName, context);
@@ -396,6 +419,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
       subject: subject,
       def: def,
       get: get,
+      it: it,
       its: its,
       is: is,
       sharedExamplesFor: sharedExamplesFor,
@@ -559,18 +583,18 @@ function optional(name) { try { return require(name) } catch(e) {} }
 
   function addInterface$1(rootSuite, options) {
     var tracker = new options.Tracker({ rootSuite: rootSuite, suiteTracker: createSuiteTracker$1() });
-    var isContextUpdated = false;
+    var ui = void 0;
 
     rootSuite.afterEach(tracker.cleanUpCurrentContext);
     rootSuite.on('pre-require', function (context) {
       var describe = context.describe;
 
-      if (!isContextUpdated) {
-        var ui = _interface(context, tracker, options);
+      if (!ui) {
+        ui = _interface(context, tracker, options);
         _extends(context, ui);
-        isContextUpdated = true;
       }
 
+      context.it = ui.it;
       context.describe = tracker.wrapSuite(describe);
       context.describe.skip = tracker.wrapSuite(describe.skip);
       context.describe.only = tracker.wrapSuite(describe.only);
