@@ -243,10 +243,10 @@ describe('Map', () => {
 ## Shortcuts
 
 Very often we want to declare several test cases which tests subject's field or subejct's behavior.
-To do this quickly you can use `its` or `it`:
+To do this quickly you can use `its` or `it` without message:
 
 <details>
-  <summary>`it` and `its` shortcuts</summary>
+  <summary>Shortcuts example</summary>
 
 ```js
 describe('Array', () => {
