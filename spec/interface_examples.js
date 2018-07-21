@@ -312,6 +312,16 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
     its('nested.value', function() {
       is.expected.to.equal(getVar('subject').nested.value);
     });
+
+    try {
+      its.skip('name', function() {
+        is.expected.to.be.never.called();
+      });
+    } catch (error) {
+      xits('name', function() {
+        is.expected.to.be.never.called();
+      });
+    }
   });
 });
 

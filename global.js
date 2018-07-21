@@ -600,19 +600,21 @@ function optional(name) { try { return require(name) } catch(e) {} }
 
     rootSuite.afterEach(tracker.cleanUpCurrentContext);
     rootSuite.on('pre-require', function (context) {
-      var describe = context.describe;
+      var describe = context.describe,
+          it = context.it;
+
 
       if (!ui) {
         ui = _interface(context, tracker, options);
         _extends(context, ui);
       }
 
-      context.its = ui.wrapIts(context.it);
-      context.its.only = ui.wrapIts(context.it.only);
-      context.its.skip = ui.wrapIts(context.it.skip);
-      context.it = ui.wrapIt(context.it);
-      context.it.only = ui.wrapIt(context.it.only);
-      context.it.skip = ui.wrapIt(context.it.skip);
+      context.its = ui.wrapIts(it);
+      context.its.only = ui.wrapIts(it.only);
+      context.its.skip = ui.wrapIts(it.skip);
+      context.it = ui.wrapIt(it);
+      context.it.only = ui.wrapIt(it.only);
+      context.it.skip = ui.wrapIt(it.skip);
       context.describe = tracker.wrapSuite(describe);
       context.describe.skip = tracker.wrapSuite(describe.skip);
       context.describe.only = tracker.wrapSuite(describe.only);
