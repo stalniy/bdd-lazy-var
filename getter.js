@@ -361,46 +361,52 @@ function optional(name) { try { return require(name) } catch(e) {} }
       });
     }
 
-    function its(prop, messageOrAssert, fn) {
-      var _ref = typeof messageOrAssert === 'function' ? [parse_message(messageOrAssert), messageOrAssert] : [messageOrAssert, fn],
-          message = _ref[0],
-          assert = _ref[1];
+    var wrapIts = function wrapIts(test) {
+      return function its(prop, messageOrAssert, fn) {
+        var _ref = typeof messageOrAssert === 'function' ? [parse_message(messageOrAssert), messageOrAssert] : [messageOrAssert, fn],
+            message = _ref[0],
+            assert = _ref[1];
 
-      return context.describe(prop, function () {
-        def('__itsSubject__', function () {
-          return prop.split('.').reduce(function (object, field) {
-            var value = object[field];
+        return context.describe(prop, function () {
+          def('__itsSubject__', function () {
+            return prop.split('.').reduce(function (object, field) {
+              var value = object[field];
 
-            return typeof value === 'function' ? object[field]() : value;
-          }, subject());
+              return typeof value === 'function' ? object[field]() : value;
+            }, subject());
+          });
+
+          test(message || 'is correct', assert);
         });
+      };
+    };
 
-        context.it(message || 'is correct', assert);
-      });
-    }
+    // TODO: `shouldWrapAssert` can be removed when https://github.com/facebook/jest/issues/6516 fixed
+    var wrapIt = function wrapIt(test, shouldWrapAssert) {
+      return function it() {
+        for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+          args[_key4] = arguments[_key4];
+        }
 
-    var test = context.it;
-    function it() {
-      for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-        args[_key4] = arguments[_key4];
-      }
+        if (typeof args[0] === 'function') {
+          args.unshift(parse_message(args[0]));
+        }
 
-      if (typeof args[0] === 'function') {
-        args.unshift(parse_message(args[0]));
-        var assert = args[1];
-        // TODO: wrapper function can be removed when https://github.com/facebook/jest/issues/6516 fixed
-        args[1] = function testWrapper() {
-          for (var _len5 = arguments.length, testArgs = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-            testArgs[_key5] = arguments[_key5];
-          }
+        if (shouldWrapAssert) {
+          var assert = args[1];
+          args[1] = function testWrapper() {
+            for (var _len5 = arguments.length, testArgs = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+              testArgs[_key5] = arguments[_key5];
+            }
 
-          var value = assert.apply(this, testArgs);
-          return value && typeof value.then === 'function' ? value : undefined;
-        };
-      }
+            var value = assert.apply(this, testArgs);
+            return value && typeof value.then === 'function' ? value : undefined;
+          };
+        }
 
-      return test.apply(undefined, args);
-    }
+        return test.apply(undefined, args);
+      };
+    };
 
     function runHook(name, suite, varName) {
       if (name && typeof options[name] === 'function') {
@@ -419,8 +425,8 @@ function optional(name) { try { return require(name) } catch(e) {} }
       subject: subject,
       def: def,
       get: get,
-      it: it,
-      its: its,
+      wrapIt: wrapIt,
+      wrapIts: wrapIts,
       is: is,
       sharedExamplesFor: sharedExamplesFor,
       includeExamplesFor: includeExamplesFor,
@@ -544,8 +550,15 @@ function optional(name) { try { return require(name) } catch(e) {} }
     var context = global$1;
     var tracker = new options.Tracker({ rootSuite: rootSuite, suiteTracker: createSuiteTracker() });
     var ui = _interface(context, tracker, options);
+    var isJest = typeof jest !== 'undefined';
 
     _extends(context, ui);
+    context.its = ui.wrapIts(context.it);
+    context.fits = ui.wrapIts(context.fit);
+    context.xits = ui.wrapIts(context.xit);
+    context.it = ui.wrapIt(context.it, isJest);
+    context.fit = ui.wrapIt(context.fit, isJest);
+    context.xit = ui.wrapIt(context.xit, isJest);
     context.describe = tracker.wrapSuite(context.describe);
     context.xdescribe = tracker.wrapSuite(context.xdescribe);
     context.fdescribe = tracker.wrapSuite(context.fdescribe);
@@ -564,7 +577,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
     }
   };
 
-  var jest = jasmine;
+  var jest$1 = jasmine;
 
   // eslint-disable-line
 
@@ -594,7 +607,12 @@ function optional(name) { try { return require(name) } catch(e) {} }
         _extends(context, ui);
       }
 
-      context.it = ui.it;
+      context.its = ui.wrapIts(context.it);
+      context.its.only = ui.wrapIts(context.it.only);
+      context.its.skip = ui.wrapIts(context.it.skip);
+      context.it = ui.wrapIt(context.it);
+      context.it.only = ui.wrapIt(context.it.only);
+      context.it.skip = ui.wrapIt(context.it.skip);
       context.describe = tracker.wrapSuite(describe);
       context.describe.skip = tracker.wrapSuite(describe.skip);
       context.describe.only = tracker.wrapSuite(describe.only);
@@ -615,7 +633,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
         return addInterface$1(rootSuite, config);
       };
 
-      var getters = ['get', 'def', 'subject', 'its', 'is', 'sharedExamplesFor', 'includeExamplesFor', 'itBehavesLike'];
+      var getters = ['get', 'def', 'subject', 'its', 'it', 'is', 'sharedExamplesFor', 'includeExamplesFor', 'itBehavesLike'];
       var defs = getters.reduce(function (all, uiName) {
         all[uiName] = { get: function get$$1() {
             return global$1[uiName];
@@ -637,8 +655,8 @@ function optional(name) { try { return require(name) } catch(e) {} }
 
   var ui = void 0;
 
-  if (global$1.jest) {
-    ui = jest; // eslint-disable-line
+  if (typeof jest !== 'undefined') {
+    ui = jest$1; // eslint-disable-line
   } else if (global$1.jasmine) {
     ui = jasmine; // eslint-disable-line
   } else if (Mocha$1) {
