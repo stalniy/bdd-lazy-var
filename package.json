@@ -86,6 +86,7 @@
     "testMatch": [
       "**/spec/*_spec.js"
     ],
-    "setupTestFrameworkScriptFile": "./tools/jest.setup.js"
+    "setupTestFrameworkScriptFile": "./tools/jest.setup.js",
+    "testURL": "http://localhost"
   }
 }
