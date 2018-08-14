@@ -425,6 +425,10 @@ const { get, def } = require('bdd-lazy-var/global');
 
 All are bundled as UMD versions. Each dialect is compiled in a separate file and should be required or provided for testing framework.
 
+### Aliases
+
+In accordance with Rspec's DDL, `context`, `xcontext`, and `fcontext` have been aliased to their related `describe` commands for both the Jest and Jasmine testing libraries. Mocha's BDD interface already provides this keyword.
+
 ## The Core Features
 * lazy instantiation, allows variable composition
 * automatically cleaned after each test
