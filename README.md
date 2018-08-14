@@ -242,7 +242,7 @@ describe('Map', () => {
 
 ## Shortcuts
 
-Very often we want to declare several test cases which tests subject's field or subejct's behavior.
+Very often we want to declare several test cases which tests subject's field or subject's behavior.
 To do this quickly you can use `its` or `it` without message:
 
 <details>
