@@ -41,7 +41,7 @@ Before you submit your Pull Request (PR) consider the following guidelines:
 
 * **include appropriate test cases**.
 * Follow defined [Coding Rules](#rules).
-* Run all test suites `npm test`
+* Build distributable library files with `npm run build`. Run all test suites `npm test`.
 * Commit your changes using a descriptive commit message that follows defined [commit message conventions](#commit). Adherence to these conventions is necessary because release notes are automatically generated from these messages.
 * Push your branch to GitHub:
 
