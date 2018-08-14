@@ -563,6 +563,7 @@ function optional(name) { try { return require(name) } catch(e) {} }
     context.xdescribe = tracker.wrapSuite(context.xdescribe);
     context.fdescribe = tracker.wrapSuite(context.fdescribe);
     context.context = context.describe;
+    context.xcontext = context.xdescribe;
     global$1.afterEach(tracker.cleanUpCurrentContext);
 
     return ui;
