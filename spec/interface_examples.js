@@ -56,6 +56,14 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
         expect(getVar('fullName')).to.equal('John Smith');
       });
     });
+
+    context('nested suite using \'context\' alias', function() {
+      def('lastName', 'Cusak');
+
+      it('uses suite specific variable inside dynamic parent variable', function() {
+        expect(getVar('fullName')).to.equal('John Cusak');
+      });
+    });
   });
 
   describe('dynamic variable definition', function() {
