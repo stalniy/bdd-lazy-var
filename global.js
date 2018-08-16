@@ -570,14 +570,14 @@ function optional(name) { try { return require(name) } catch(e) {} }
     var isJest = typeof jest !== 'undefined';
 
     _extends(context, ui);
-    ['it', 'fit', 'xit'].forEach(function (name) {
-      context[name + 's'] = wrapIts(context[name]);
-      context[name] = wrapIt(context[name], isJest);
-    });
     ['', 'x', 'f'].forEach(function (prefix) {
-      var name = prefix + 'describe';
-      context[name] = tracker.wrapSuite(context[name]);
-      context[prefix + 'context'] = context[name];
+      var describeKey = prefix + 'describe';
+      var itKey = prefix + 'it';
+
+      context[itKey + 's'] = wrapIts(context[itKey]);
+      context[itKey] = wrapIt(context[itKey], isJest);
+      context[describeKey] = tracker.wrapSuite(context[describeKey]);
+      context[prefix + 'context'] = context[describeKey];
     });
     context.afterEach(tracker.cleanUpCurrentContext);
 

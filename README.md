@@ -275,6 +275,8 @@ Also it generates messages for you based on passed in function body. The example
 ```
 </details>
 
+**Note**: if you use `mocha` and `chai` make sure that defines `global.expect = chai.expect`, otherwise `is.expected` will throw error that `context.expect` is `undefined`.
+
 ## Installation
 
 ```bash
