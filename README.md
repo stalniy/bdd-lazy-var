@@ -242,7 +242,7 @@ describe('Map', () => {
 
 ## Shortcuts
 
-Very often we want to declare several test cases which tests subject's field or subejct's behavior.
+Very often we want to declare several test cases which tests subject's field or subject's behavior.
 To do this quickly you can use `its` or `it` without message:
 
 <details>
@@ -424,6 +424,10 @@ const { get, def } = require('bdd-lazy-var/global');
 * access variables by referencing `get('<variableName>')` (the most strict and less readable way, available by requiring `bdd-lazy-var`)
 
 All are bundled as UMD versions. Each dialect is compiled in a separate file and should be required or provided for testing framework.
+
+### Aliases
+
+In accordance with Rspec's DDL, `context`, `xcontext`, and `fcontext` have been aliased to their related `describe` commands for both the Jest and Jasmine testing libraries. Mocha's BDD interface already provides this keyword.
 
 ## The Core Features
 * lazy instantiation, allows variable composition
