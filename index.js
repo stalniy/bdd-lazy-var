@@ -55,6 +55,18 @@ function optional(name) { try { return require(name) } catch(e) {} }
     return target;
   };
 
+  var objectWithoutProperties = function (obj, keys) {
+    var target = {};
+
+    for (var i in obj) {
+      if (keys.indexOf(i) >= 0) continue;
+      if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+      target[i] = obj[i];
+    }
+
+    return target;
+  };
+
   var LAZY_VARS_FIELD = symbol.for('__lazyVars');
   var EXAMPLES_PREFIX = '__SH_EX:';
 
@@ -549,23 +561,25 @@ function optional(name) { try { return require(name) } catch(e) {} }
   function addInterface(rootSuite, options) {
     var context = global$1;
     var tracker = new options.Tracker({ rootSuite: rootSuite, suiteTracker: createSuiteTracker() });
-    var ui = _interface(context, tracker, options);
+
+    var _createLazyVarInterfa = _interface(context, tracker, options),
+        wrapIts = _createLazyVarInterfa.wrapIts,
+        wrapIt = _createLazyVarInterfa.wrapIt,
+        ui = objectWithoutProperties(_createLazyVarInterfa, ['wrapIts', 'wrapIt']);
+
     var isJest = typeof jest !== 'undefined';
 
     _extends(context, ui);
-    context.its = ui.wrapIts(context.it);
-    context.fits = ui.wrapIts(context.fit);
-    context.xits = ui.wrapIts(context.xit);
-    context.it = ui.wrapIt(context.it, isJest);
-    context.fit = ui.wrapIt(context.fit, isJest);
-    context.xit = ui.wrapIt(context.xit, isJest);
-    context.describe = tracker.wrapSuite(context.describe);
-    context.xdescribe = tracker.wrapSuite(context.xdescribe);
-    context.fdescribe = tracker.wrapSuite(context.fdescribe);
-    context.context = context.describe;
-    context.xcontext = context.xdescribe;
-    context.fcontext = context.fdescribe;
-    global$1.afterEach(tracker.cleanUpCurrentContext);
+    ['it', 'fit', 'xit'].forEach(function (name) {
+      context[name + 's'] = wrapIts(context[name]);
+      context[name] = wrapIt(context[name], isJest);
+    });
+    ['', 'x', 'f'].forEach(function (prefix) {
+      var name = prefix + 'describe';
+      context[name] = tracker.wrapSuite(context[name]);
+      context[prefix + 'context'] = context[name];
+    });
+    context.afterEach(tracker.cleanUpCurrentContext);
 
     return ui;
   }
@@ -609,7 +623,12 @@ function optional(name) { try { return require(name) } catch(e) {} }
 
       if (!ui) {
         ui = _interface(context, tracker, options);
-        _extends(context, ui);
+        var _ui = ui,
+            wrapIts = _ui.wrapIts,
+            wrapIt = _ui.wrapIt,
+            restUi = objectWithoutProperties(_ui, ['wrapIts', 'wrapIt']);
+
+        _extends(context, restUi);
       }
 
       context.its = ui.wrapIts(it);

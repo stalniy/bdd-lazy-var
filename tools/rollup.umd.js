@@ -38,13 +38,14 @@ function useSafeDependencies(deps) {
 }
 
 export default {
-  external: ['mocha', 'jasmine'],
+  external: ['mocha', 'jasmine', 'jest'],
   output: {
     format: 'umd',
     name: MODULE_NAME,
     globals: {
       mocha: 'Mocha',
-      jasmine: 'jasmine'
+      jasmine: 'jasmine',
+      jest: 'jest'
     },
   },
   plugins: [
@@ -67,7 +68,8 @@ export default {
       ],
       plugins: [
         'external-helpers',
-        'transform-object-assign'
+        'transform-object-assign',
+        'transform-object-rest-spread'
       ]
     }),
     dontPoluteGlobal(),
