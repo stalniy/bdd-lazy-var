@@ -141,11 +141,11 @@ sharedExamplesFor('a collection', () => {
   })
 
   describe('#has', () => {
-    it('returns true with an an item that is in the collection', () => {
+    it('returns true with an item that is in the collection', () => {
       expect($subject.has(7)).to.be.true
     })
 
-    it('returns false with an an item that is not in the collection', () => {
+    it('returns false with an item that is not in the collection', () => {
       expect($subject.has(9)).to.be.false
     })
   })
@@ -175,11 +175,11 @@ sharedExamplesFor('a collection', (size, existingItem, nonExistingItem) => {
   })
 
   describe('#has', () => {
-    it('returns true with an an item that is in the collection', () => {
+    it('returns true with an item that is in the collection', () => {
       expect($subject.has(existingItem)).to.be.true
     })
 
-    it('returns false with an an item that is not in the collection', () => {
+    it('returns false with an item that is not in the collection', () => {
       expect($subject.has(nonExistingItem)).to.be.false
     })
   })
@@ -216,11 +216,11 @@ sharedExamplesFor('a collection', (collection) => {
   })
 
   describe('#has', () => {
-    it('returns true with an an item that is in the collection', () => {
+    it('returns true with an item that is in the collection', () => {
       expect($collection.has(7)).to.be.true
     })
 
-    it('returns false with an an item that is not in the collection', () => {
+    it('returns false with an item that is not in the collection', () => {
       expect($collection.has(9)).to.be.false
     })
   })
