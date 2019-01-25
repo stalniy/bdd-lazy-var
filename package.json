@@ -28,7 +28,7 @@
   "optionalDependencies": {
     "mocha": "^4.0.0 || ^3.0.0 || ^2.3.0 || ^5.0.0",
     "jasmine-core": "^2.0.0 || ^3.0.0",
-    "jest": "^20.0.0 || ^22.0.0 || ^23.0.0"
+    "jest": "^20.0.0 || ^22.0.0 || ^23.0.0 || ^24.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -42,7 +42,7 @@
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.8.0",
     "jasmine": "^3.0.0",
-    "jest": "^23.0.0",
+    "jest": "^24.0.0",
     "karma": "^3.0.0",
     "karma-firefox-launcher": "^1.0.1",
     "karma-jasmine": "^2.0.0",
