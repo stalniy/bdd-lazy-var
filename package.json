@@ -31,11 +31,11 @@
     "jest": "^20.0.0 || ^22.0.0 || ^23.0.0 || ^24.0.0"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-plugin-external-helpers": "^6.22.0",
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
+    "@babel/plugin-transform-object-assign": "^7.2.0",
+    "@babel/preset-env": "^7.3.1",
     "babel-plugin-transform-object-assign": "^6.22.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
     "chai-spies": "^1.0.0",
     "eslint": "^5.0.0",
@@ -81,13 +81,16 @@
     "build.global-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_global_var.js -o global.js",
     "build.getter-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_getter_var.js -o getter.js",
     "build": "npm run build.ui && npm run build.global-ui && npm run build.getter-ui",
-    "lint": "eslint --fix lib"
+    "lint": "eslint lib"
   },
   "jest": {
+    "testEnvironment": "node",
     "testMatch": [
       "**/spec/*_spec.js"
     ],
-    "setupTestFrameworkScriptFile": "./tools/jest.setup.js",
-    "testURL": "http://localhost"
-  }
+    "setupFilesAfterEnv": [
+      "./tools/jest.setup.js"
+    ]
+  },
+  "dependencies": {}
 }

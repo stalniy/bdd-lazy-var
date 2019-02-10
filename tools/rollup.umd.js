@@ -8,7 +8,7 @@ const MODULE_NAME = 'bdd_lazy_var';
 function dontPoluteGlobal() {
   return {
     name: 'no-global-polution',
-    transformBundle(source) {
+    renderChunk(source) {
       const regexp = new RegExp(`global.${MODULE_NAME} *= *(factory.+)`);
       return source.replace(regexp, '$1');
     }
@@ -18,7 +18,7 @@ function dontPoluteGlobal() {
 function useSafeDependencies(deps) {
   return {
     name: 'safe-deps',
-    transformBundle(source) {
+    renderChunk(source) {
       return source
         .replace(/(function *\([^)]*\) \{)/, [
           '$1',
@@ -60,16 +60,17 @@ export default {
     babel({
       exclude: 'node_modules/**',
       presets: [
-        ['env', {
+        ['@babel/preset-env', {
           modules: false,
           loose: true,
-          browsers: ['last 3 versions', 'safari >= 7']
+          targets: {
+            browsers: ['last 3 versions', 'safari >= 7']
+          }
         }]
       ],
       plugins: [
-        'external-helpers',
-        'transform-object-assign',
-        'transform-object-rest-spread'
+        '@babel/plugin-transform-object-assign',
+        '@babel/plugin-proposal-object-rest-spread'
       ]
     }),
     dontPoluteGlobal(),
