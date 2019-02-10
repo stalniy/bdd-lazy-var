@@ -1,4 +1,4 @@
-const uiFile = process.argv.slice(0).pop();
+const uiFile = process.env.SRC_FILE;
 
 require('../spec/config');
 require(`../${uiFile}`);

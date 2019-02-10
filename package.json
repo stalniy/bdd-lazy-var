@@ -71,9 +71,9 @@
     "test.browser-jasmine-global": "karma start -f jasmine --src global.js --specs spec/global_defs_spec.js,spec/interface_spec.js tools/karma.config.js",
     "test.browser-jasmine-getter": "karma start -f jasmine --src getter.js --specs spec/getter_defs_spec.js,spec/interface_spec.js tools/karma.config.js",
     "test.jasmine-in-browser": "npm run test.browser-jasmine-ui && npm run test.browser-jasmine-global && npm run test.browser-jasmine-getter",
-    "test.jest-ui": "jest --findRelatedTests spec/interface_spec.js index.js",
-    "test.jest-global": "jest --findRelatedTests spec/global_defs_spec.js global.js",
-    "test.jest-getter": "jest --findRelatedTests spec/getter_defs_spec.js getter.js",
+    "test.jest-ui": "SRC_FILE=index.js jest --findRelatedTests spec/interface_spec.js",
+    "test.jest-global": "SRC_FILE=global.js jest --findRelatedTests spec/global_defs_spec.js",
+    "test.jest-getter": "SRC_FILE=getter.js jest --findRelatedTests spec/getter_defs_spec.js",
     "test.jest": "npm run test.jest-ui && npm run test.jest-global && npm run test.jest-getter",
     "test": "npm run test.mocha && npm run test.mocha-in-browser && npm run test.jasmine && npm run test.jasmine-in-browser && npm run test.jest",
     "prebuild": "npm run lint",
@@ -81,16 +81,15 @@
     "build.global-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_global_var.js -o global.js",
     "build.getter-ui": "rollup -c tools/rollup.umd.js -i lib/interface/dialects/bdd_getter_var.js -o getter.js",
     "build": "npm run build.ui && npm run build.global-ui && npm run build.getter-ui",
-    "lint": "eslint lib"
+    "lint": "eslint --fix lib"
   },
   "jest": {
     "testEnvironment": "node",
     "testMatch": [
-      "**/spec/*_spec.js"
+      "<rootDir>/spec/**/*_spec.js"
     ],
     "setupFilesAfterEnv": [
       "./tools/jest.setup.js"
     ]
-  },
-  "dependencies": {}
+  }
 }
