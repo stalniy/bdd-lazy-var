@@ -1,0 +1,11 @@
+{
+  "env": {
+    "node": true,
+    "mocha": true
+  },
+  "globals": {
+    "window": true,
+    "expect": true,
+    "spy": true
+  }
+}

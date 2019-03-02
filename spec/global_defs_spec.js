@@ -1,15 +1,15 @@
 function getVar(name) {
-  return global['$' + name];
+  return global[`$${name}`];
 }
 
 includeExamplesFor('Root Lazy Vars', getVar);
 
-describe('Interface with globally defined lazy vars', function() {
+describe('Interface with globally defined lazy vars', () => {
   includeExamplesFor('Lazy Vars Interface', getVar);
   includeExamplesFor('Default suite tracking', getVar);
 
-  describe('by default', function() {
-    subject(function() {
+  describe('by default', () => {
+    subject(() => {
       return {};
     });
 
@@ -19,21 +19,21 @@ describe('Interface with globally defined lazy vars', function() {
     try {
       global.$bddLazyCounter = 2;
       def('bddLazyCounter', 5);
-    } catch(e) {
+    } catch (e) {
       global.$bddLazyCounter = null;
     }
 
-    it('defines a getter on global object for lazy variable with name prefixed by "$"', function() {
+    it('defines a getter on global object for lazy variable with name prefixed by "$"', () => {
       expect(global.$subject).to.exist;
     });
 
-    it('allows to access lazy variable value by its name', function() {
+    it('allows to access lazy variable value by its name', () => {
       expect($subject).to.equal(subject());
     });
 
-    it('forwards calls to `get` function when access variable', function() {
-      var accessor = spy();
-      var originalGet = global.get;
+    it('forwards calls to `get` function when access variable', () => {
+      const accessor = spy();
+      const originalGet = global.get;
 
       global.get = accessor;
       $anotherVar;
@@ -42,7 +42,7 @@ describe('Interface with globally defined lazy vars', function() {
       expect(accessor).to.have.been.called.with('anotherVar');
     });
 
-    it('does not allow to redefine existing variable in global context', function() {
+    it('does not allow to redefine existing variable in global context', () => {
       expect($bddLazyCounter).to.be.null;
     });
   });

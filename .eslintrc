@@ -1,6 +1,7 @@
 {
   "extends": "airbnb-base",
   "rules": {
+    "no-undef-lazy-var": ["error"],
     "no-plusplus": 0,
     "comma-dangle": 0,
     "no-underscore-dangle": ["error", { "allowAfterThis": true }],

@@ -1,90 +1,90 @@
-sharedExamplesFor('Default suite tracking', function(getVar) {
-  describe('when using variable inside another variable definition', function() {
-    var user = { firstName: 'John', lastName: 'Doe' };
-    var index = 0;
-    var currentIndex;
+sharedExamplesFor('Default suite tracking', (getVar) => {
+  describe('when using variable inside another variable definition', () => {
+    const user = { firstName: 'John', lastName: 'Doe' };
+    let index = 0;
+    let currentIndex;
 
-    before(function() {
+    before(() => {
       expect(getVar('currentIndex')).to.equal(currentIndex);
     });
 
-    beforeEach(function usesVariableDefinedInCurrentlyRunningSuiteInBeforeEachCallback() {
+    beforeEach(() => {
       expect(cast(getVar('currentIndex'))).to.equal(cast(currentIndex));
     });
 
-    afterEach(function usesVariableDefinedInCurrentlyRunningSuiteInAfterEachCallback() {
+    afterEach(() => {
       expect(cast(getVar('currentIndex'))).to.equal(cast(currentIndex));
     });
 
-    after(function usesOwnDefinedVariable() {
+    after(() => {
       expect(getVar('currentIndex')).to.equal(currentIndex);
     });
 
-    def('personName', function() {
-      return getVar('firstName') + ' ' + getVar('lastName');
+    def('personName', () => {
+      return `${getVar('firstName')} ${getVar('lastName')}`;
     });
 
     def('firstName', user.firstName);
     def('lastName', user.lastName);
 
-    def('currentIndex', function() {
+    def('currentIndex', () => {
       currentIndex = ++index;
 
       return currentIndex;
     });
 
-    def('CurrenIndexType', function() {
+    def('CurrenIndexType', () => {
       return Number;
     });
 
-    it('computes the proper result', function() {
-      expect(getVar('personName')).to.equal(user.firstName + ' ' + user.lastName);
+    it('computes the proper result', () => {
+      expect(getVar('personName')).to.equal(`${user.firstName} ${user.lastName}`);
     });
 
-    describe('nested suite', function() {
-      var user = { firstName: 'Alex' };
+    describe('nested suite', () => {
+      const user = { firstName: 'Alex' };
 
-      before(function() {
+      before(() => {
         expect(getVar('currentIndex')).to.equal(cast(currentIndex));
       });
 
-      beforeEach(function usesOwnDefinedVariableInBeforeEachCallbackEvenWhenItIsRunForNestedTests() {
+      beforeEach(() => {
         expect(getVar('currentIndex')).to.equal(cast(currentIndex));
       });
 
-      afterEach(function usesOwnDefinedVariableInAfterEachCallbackEvenWhenItIsRunForNestedTests() {
+      afterEach(() => {
         expect(getVar('currentIndex')).to.equal(cast(currentIndex));
       });
 
-      after(function usesOwnDefinedVariable() {
+      after(() => {
         expect(getVar('currentIndex')).to.equal(cast(currentIndex));
       });
 
       def('firstName', user.firstName);
 
-      def('currentIndex', function() {
+      def('currentIndex', () => {
         return cast(getVar('currentIndex'));
       });
 
-      def('CurrenIndexType', function() {
+      def('CurrenIndexType', () => {
         return String;
       });
 
-      it('falls back to parent variable', function() {
+      it('falls back to parent variable', () => {
         expect(getVar('lastName')).to.equal('Doe');
       });
 
-      it('computes parent variable using redefined variable', function() {
-        expect(getVar('personName')).to.equal(user.firstName + ' ' + getVar('lastName'));
+      it('computes parent variable using redefined variable', () => {
+        expect(getVar('personName')).to.equal(`${user.firstName} ${getVar('lastName')}`);
       });
 
-      it('can redefine parent variable with the same name and access value of parent variable inside definition', function() {
+      it('can redefine parent variable with the same name and access value of parent variable inside definition', () => {
         expect(getVar('currentIndex')).to.equal(cast(currentIndex));
       });
     });
 
     function cast(value) {
-      var convert = getVar('CurrenIndexType');
+      const convert = getVar('CurrenIndexType');
 
       return convert(value);
     }

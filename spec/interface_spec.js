@@ -1,30 +1,30 @@
 includeExamplesFor('Root Lazy Vars', get);
 
-describe('Lazy variables interface', function() {
+describe('Lazy variables interface', () => {
   includeExamplesFor('Lazy Vars Interface', get);
   includeExamplesFor('Default suite tracking', get);
 
-  describe('`it` without message', function() {
-    subject(function() {
+  describe('`it` without message', () => {
+    subject(() => {
       return {
         items: [1, 2, 3]
       };
     });
 
-    it(function() {
+    it(() => {
       is.expected.to.be.an('object');
     });
 
-    it(function() {
+    it(() => {
       is.expected.to.have.property('items').which.has.length(3);
     });
 
     try {
-      it.skip(function() {
+      it.skip(() => {
         is.expected.to.be.never.called();
       });
     } catch (error) {
-      xit(function() {
+      xit(() => {
         is.expected.to.be.never.called();
       });
     }
