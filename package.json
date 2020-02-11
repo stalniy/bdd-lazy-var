@@ -37,7 +37,7 @@
     "eslint-config-airbnb-base": "^13.0.0",
     "eslint-plugin-import": "^2.8.0",
     "jasmine": "^3.0.0",
-    "jest": "^24.0.0",
+    "jest": "^25.0.0",
     "karma": "^4.0.0",
     "karma-firefox-launcher": "^1.0.1",
     "karma-jasmine": "^3.0.0",
