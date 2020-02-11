@@ -5,6 +5,9 @@ node_js:
   - lts/*
   - node
 
+addons:
+  chrome: stable
+
 services:
   - xvfb
 

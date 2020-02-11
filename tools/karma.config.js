@@ -1,4 +1,7 @@
 const path = require('path');
+const puppeteer = require('puppeteer');
+
+process.env.CHROME_BIN = puppeteer.executablePath();
 
 module.exports = function(config) {
   const specs = (config.specs || '').split(',');
@@ -21,7 +24,7 @@ module.exports = function(config) {
     reporters: ['dots'],
     autoWatch: false,
     singleRun: true,
-    browsers: ['Firefox'],
+    browsers: ['ChromeHeadless'],
     files: frameworks.includes('mocha') ? specs : srcFiles.concat(specs),
     client: {
       mocha: {
