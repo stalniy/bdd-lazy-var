@@ -1,18 +1,19 @@
 {
   "extends": "airbnb-base",
   "rules": {
-    "no-plusplus": 0,
-    "comma-dangle": 0,
+    "no-plusplus": "off",
+    "comma-dangle": "off",
     "no-underscore-dangle": ["error", { "allowAfterThis": true }],
     "no-param-reassign": ["error", { "props": false }],
-    "no-mixed-operators": 0,
-    "no-prototype-builtins": 0,
-    "no-multi-assign": 0,
-    "no-confusing-arrow": 0,
-    "no-return-assign": 0,
-    "arrow-body-style": 0,
+    "no-mixed-operators": "off",
+    "no-prototype-builtins": "off",
+    "no-multi-assign": "off",
+    "no-confusing-arrow": "off",
+    "no-return-assign": "off",
+    "arrow-body-style": "off",
     "no-use-before-define": ["error", { "functions": false }],
-    "class-methods-use-this": 0,
-    "prefer-destructuring": 0
+    "class-methods-use-this": "off",
+    "prefer-destructuring": "off",
+    "max-classes-per-file": "off"
   }
 }
