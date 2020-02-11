@@ -42,6 +42,7 @@ export default {
   output: {
     format: 'umd',
     name: MODULE_NAME,
+    sourcemap: true,
     globals: {
       mocha: 'Mocha',
       jasmine: 'jasmine',

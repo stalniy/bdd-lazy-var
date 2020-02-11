@@ -86,5 +86,17 @@
     "setupFilesAfterEnv": [
       "./tools/jest.setup.js"
     ]
-  }
+  },
+  "files": [
+    "getter.js",
+    "getter.js.map",
+    "getter.d.ts",
+    "global.js",
+    "global.js.map",
+    "global.d.ts",
+    "index.js",
+    "index.js.map",
+    "index.d.ts",
+    "interface.d.ts"
+  ]
 }
