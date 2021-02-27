@@ -25,6 +25,26 @@
     "url": "https://github.com/stalniy/bdd-lazy-var/issues"
   },
   "main": "./index",
+  "peerDependencies": {
+    "jasmine": ">=2",
+    "jasmine-core": ">=2",
+    "jest": ">=20",
+    "mocha": ">=2.3"
+  },
+  "peerDependenciesMeta": {
+    "jasmine": {
+      "optional": true
+    },
+    "jasmine-core": {
+      "optional": true
+    },
+    "jest": {
+      "optional": true
+    },
+    "mocha": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@babel/core": "^7.2.2",
     "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
