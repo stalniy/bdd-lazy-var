@@ -1,3 +1,5 @@
+## [2.6.1](https://github.com/stalniy/bdd-lazy-var/compare/v2.6.0...v2.6.1) (2021-03-14)
+
 # [2.6.0](https://github.com/stalniy/bdd-lazy-var/compare/v2.5.5...v2.6.0) (2020-12-10)
 
 
