@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "declaration": true,
+    "noErrorTruncation": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "./test.ts"
+  ]
+}
