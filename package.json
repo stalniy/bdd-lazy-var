@@ -50,8 +50,8 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
     "@babel/plugin-transform-object-assign": "^7.2.0",
     "@babel/preset-env": "^7.3.1",
-    "@semantic-release/changelog": "^5.0.1",
-    "@semantic-release/git": "^9.0.0",
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/git": "^10.0.0",
     "babel-plugin-transform-object-assign": "^6.22.0",
     "chai": "^4.1.2",
     "chai-spies": "^1.0.0",
@@ -70,7 +70,7 @@
     "rollup-plugin-babel": "^4.0.0",
     "rollup-plugin-commonjs": "^10.0.0",
     "rollup-plugin-inject": "^3.0.0",
-    "semantic-release": "^17.3.0"
+    "semantic-release": "^18.0.0"
   },
   "scripts": {
     "mocha": "NODE_PATH=. mocha -r spec/config spec/*_examples.js spec/shared_behavior_spec.js",
