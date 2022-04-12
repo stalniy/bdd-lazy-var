@@ -62,7 +62,7 @@
     "jest": "^27.0.0",
     "karma": "^6.0.0",
     "karma-chrome-launcher": "^3.1.0",
-    "karma-jasmine": "^4.0.0",
+    "karma-jasmine": "^5.0.0",
     "karma-mocha": "^2.0.0",
     "mocha": "^9.0.0",
     "puppeteer": "^13.0.0",
