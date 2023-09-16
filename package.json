@@ -70,7 +70,7 @@
     "@rollup/plugin-babel": "^6.0.0",
     "rollup-plugin-commonjs": "^10.0.0",
     "rollup-plugin-inject": "^3.0.0",
-    "semantic-release": "^21.0.0"
+    "semantic-release": "^22.0.0"
   },
   "scripts": {
     "mocha": "NODE_PATH=. mocha -r spec/config spec/*_examples.js spec/shared_behavior_spec.js",
