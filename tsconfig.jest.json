@@ -7,10 +7,8 @@
     "noErrorTruncation": true,
     "esModuleInterop": true,
     "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true
+    "rewriteRelativeImportExtensions": true,
+    "noEmit": true
   },
-  "include": [
-    "src/**/*.ts",
-    "./test.ts"
-  ]
+  "include": ["src/**/*.ts"]
 }
