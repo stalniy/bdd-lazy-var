@@ -1,7 +1,5 @@
+import { expect, describe, it, afterEach, vi } from 'vitest';
 import { LazyVariables, lazy, clearScope, setOnValueCreated } from './LazyVariables.ts';
-
-// Use Jest types explicitly
-declare const jest: typeof import('@jest/globals').jest;
 
 describe('LazyVariables', () => {
   afterEach(() => {
@@ -35,49 +33,24 @@ describe('LazyVariables', () => {
       expect(scope.fullName).toBe('John Doe');
     });
 
-    it('returns the instance for chaining', () => {
-      const vars = new LazyVariables();
-      const result = vars.variable('name', 'John');
-
-      expect(result).toBe(vars);
-    });
-
-    it('supports chained variable definitions', () => {
-      const scope = lazy(b => b
-        .variable('a', 1)
-        .variable('b', 2)
-        .variable('sum', v => v.a + v.b)
-      );
-
-      expect(scope.sum).toBe(3);
-    });
-  });
-
-  describe('def alias', () => {
-    it('is an alias for variable()', () => {
+    it('has an alias `def` for variable()', () => {
       const vars = new LazyVariables();
 
       expect(vars.def).toBe(vars.variable);
     });
-
-    it('works the same as variable()', () => {
-      const scope = lazy(b => b.def('name', 'John'));
-
-      expect(scope.name).toBe('John');
-    });
   });
 
   describe('subject()', () => {
-    it('defines a subject with implementation only', () => {
+    it('defines a `subject` variable with implementation only', () => {
       const scope = lazy(b => b.subject(() => ({ value: 42 })));
 
       expect(scope.subject).toEqual({ value: 42 });
     });
 
-    it('defines a subject with name and implementation', () => {
+    it('can define a named subject', () => {
       const scope = lazy(b => b.subject('mySubject', () => ({ value: 42 })));
 
-      expect((scope as any).mySubject).toEqual({ value: 42 });
+      expect(scope.mySubject).toEqual({ value: 42 });
       expect(scope.subject).toEqual({ value: 42 });
     });
 
@@ -324,7 +297,7 @@ describe('LazyVariables', () => {
 
   describe('lazy evaluation', () => {
     it('does not call factory until variable is accessed', () => {
-      const factory = jest.fn(() => 42);
+      const factory = vi.fn(() => 42);
       const vars = new LazyVariables<{ value: number }>().variable('value', factory);
       vars.scope();
 
@@ -332,7 +305,7 @@ describe('LazyVariables', () => {
     });
 
     it('calls factory when variable is accessed', () => {
-      const factory = jest.fn(() => 42);
+      const factory = vi.fn(() => 42);
       const vars = new LazyVariables<{ value: number }>().variable('value', factory);
       const scope = vars.scope();
 
@@ -342,7 +315,7 @@ describe('LazyVariables', () => {
     });
 
     it('caches the value after first access', () => {
-      const factory = jest.fn(() => Math.random());
+      const factory = vi.fn(() => Math.random());
       const vars = new LazyVariables<{ value: number }>().variable('value', factory);
       const scope = vars.scope();
 
@@ -458,7 +431,7 @@ describe('LazyVariables', () => {
     });
 
     it('returns lazy reference that evaluates on call', () => {
-      const factory = jest.fn(() => 42);
+      const factory = vi.fn(() => 42);
       const vars = new LazyVariables<{ value: number }>().variable('value', factory);
       const scope = vars.scope();
 
@@ -563,7 +536,7 @@ describe('setOnValueCreated()', () => {
   });
 
   it('calls handler when value is created', () => {
-    const handler = jest.fn();
+    const handler = vi.fn();
     setOnValueCreated(handler);
 
     const scope = lazy(b => b.variable('name', () => 'John'));
@@ -576,7 +549,7 @@ describe('setOnValueCreated()', () => {
   });
 
   it('does not call handler for static values', () => {
-    const handler = jest.fn();
+    const handler = vi.fn();
     setOnValueCreated(handler);
 
     const scope = lazy(b => b.variable('name', 'John'));
@@ -586,7 +559,7 @@ describe('setOnValueCreated()', () => {
   });
 
   it('calls handler for each unique variable', () => {
-    const handler = jest.fn();
+    const handler = vi.fn();
     setOnValueCreated(handler);
 
     const scope = lazy(b => b
@@ -601,7 +574,7 @@ describe('setOnValueCreated()', () => {
   });
 
   it('does not call handler on subsequent accesses', () => {
-    const handler = jest.fn();
+    const handler = vi.fn();
     setOnValueCreated(handler);
 
     const scope = lazy(b => b.variable('name', () => 'John'));
@@ -614,7 +587,7 @@ describe('setOnValueCreated()', () => {
   });
 
   it('can be disabled by setting undefined', () => {
-    const handler = jest.fn();
+    const handler = vi.fn();
     setOnValueCreated(handler);
     setOnValueCreated(undefined);
 

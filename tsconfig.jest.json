@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "node",
     "strict": true,
     "declaration": true,
@@ -8,7 +9,8 @@
     "esModuleInterop": true,
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": ["jest", "chai", "node"]
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "spec/**/*.ts"]
 }

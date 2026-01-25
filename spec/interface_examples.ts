@@ -1,5 +1,12 @@
+import * as chai from "chai";
+import spies from "chai-spies";
+
 import { lazy } from '../src/index.ts';
-import type { MochaGlobals } from "mocha";
+
+const { expect, spy } = chai.use(spies) as {
+  expect: Chai.ExpectStatic;
+  spy: ChaiSpies.Spy;
+};
 
 export function includeLazyVarsInterfaceExamples({
   beforeEach,
@@ -8,9 +15,7 @@ export function includeLazyVarsInterfaceExamples({
   after,
   it,
   describe,
-  spy,
-  expect,
-}: Pick<MochaGlobals, 'beforeEach' | 'afterEach' | 'before' | 'after' | 'it' | 'describe'> & { spy: (fn?: () => any) => any, expect: Chai.ExpectStatic }) {
+}: TestFrameworkApi) {
   const $root = lazy(d => d
     .variable('firstName', 'John')
     .variable('lastName', 'Doe')
@@ -141,7 +146,7 @@ export function includeLazyVarsInterfaceExamples({
           const $parent = $; {
           const $ = lazy(d => d.extends($parent)
             .variable('anotherVar', () => 'John')
-            .variable('var', () => `${$.anotherVar} ${$.var}`)
+            .variable('var', (v) => `${v.anotherVar} ${v.var}`)
           );
 
           it('uses correct parent variable definition', () => {
@@ -218,4 +223,13 @@ export function includeLazyVarsInterfaceExamples({
       }});
     });
   });
+}
+
+export interface TestFrameworkApi {
+  beforeEach: (fn: (...args: unknown[]) => any) => void;
+  afterEach: (fn: (...args: unknown[]) => any) => void;
+  before: (fn: (...args: unknown[]) => any) => void;
+  after: (fn: (...args: unknown[]) => any) => void;
+  it: (title: string, fn: (...args: unknown[]) => any) => void;
+  describe: (title: string, fn: (...args: unknown[]) => unknown) => void;
 }
