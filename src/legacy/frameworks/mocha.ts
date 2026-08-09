@@ -24,7 +24,8 @@ function addInterface(rootSuite: Mocha.Suite, options: CreateUIOptions & { Track
     const { describe, it } = context;
 
     if (!ui) {
-      ui = createUI({ ...context, expect: globalThis.expect } as TestContextInput , tracker, options);
+      (context as TestContextInput).expect = globalThis.expect;
+      ui = createUI(context as TestContextInput, tracker, options);
       const { wrapIts, wrapIt, ...restUi } = ui;
       Object.assign(context, restUi);
     }

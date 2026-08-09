@@ -3,7 +3,7 @@ import { parseMessage, humanize } from './utils.ts';
 import { SuiteTracker } from './SuiteTracker.ts';
 
 export interface CreateUIOptions {
-  onDefineVariable?: (suite: Suite, varName: string) => void;
+  onDefineVariable?: (suite: Suite, varName: string, context: TestContextInput) => void;
 }
 
 export interface TestContextInput {
@@ -122,7 +122,7 @@ export function createUI(context: TestContextInput, tracker: SuiteTracker, optio
 
   function runHook(name: keyof CreateUIOptions, suite: Suite, varName: string): void {
     if (name && typeof options[name] === 'function') {
-      options[name](suite, varName);
+      options[name](suite, varName, context);
     }
   }
 

@@ -33,6 +33,21 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./legacy": {
+      "types": "./dist/legacy/dialects/bdd.d.ts",
+      "import": "./dist/legacy/dialects/bdd.js",
+      "require": "./dist/legacy/dialects/bdd.cjs"
+    },
+    "./global": {
+      "types": "./dist/legacy/dialects/bdd_global_var.d.ts",
+      "import": "./dist/legacy/dialects/bdd_global_var.js",
+      "require": "./dist/legacy/dialects/bdd_global_var.cjs"
+    },
+    "./getter": {
+      "types": "./dist/legacy/dialects/bdd_getter_var.d.ts",
+      "import": "./dist/legacy/dialects/bdd_getter_var.js",
+      "require": "./dist/legacy/dialects/bdd_getter_var.cjs"
+    },
     "./legacy/*": {
       "types": "./dist/legacy/dialects/*.d.ts",
       "import": "./dist/legacy/dialects/*.js",
@@ -68,6 +83,8 @@
     "test.mocha-legacy-ui": "NODE_PATH=. mocha -u ./dist/legacy/dialects/bdd.cjs spec/legacy/interface.spec.js",
     "test.mocha-legacy-global": "mocha -u dist/legacy/dialects/bdd_global_var.cjs spec/legacy/global_defs.spec.js",
     "test.mocha-legacy-getter": "mocha -u dist/legacy/dialects/bdd_getter_var.cjs spec/legacy/getter_defs.spec.js",
+    "test.mocha-legacy-shared": "mocha -u dist/legacy/dialects/bdd.cjs spec/legacy/shared_behavior.spec.js",
+    "test.legacy": "npm run test.mocha-legacy-ui && npm run test.mocha-legacy-global && npm run test.mocha-legacy-getter && npm run test.mocha-legacy-shared",
     "build": "tsup",
     "lint": "eslint --fix src spec",
     "release": "npm run build && npm test && npm publish"

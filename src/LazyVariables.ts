@@ -16,6 +16,13 @@ type LazyRefs<T> = {
 };
 
 type OnValueCreated = (value: unknown, key: PropertyKey, values: Map<PropertyKey, unknown>) => void;
+type DefinitionRecord = {
+  impl: unknown;
+  owner: LazyVariables<any>;
+};
+type EvaluationFrame = {
+  record: DefinitionRecord;
+};
 
 export function setOnValueCreated(handler: OnValueCreated | undefined) {
   LazyVariables.setOnValueCreated(handler);
@@ -28,8 +35,30 @@ export class LazyVariables<TShape extends LazyVariablesScope = {}> {
     LazyVariables.#onValueCreated = handler;
   }
 
+  static alias<T extends LazyVariablesScope>(scope: T, name: string, aliasName: string): T {
+    const factory = getFactory(scope);
+    factory.#alias(name, aliasName);
+
+    if (!hasOwn(scope, aliasName)) {
+      Object.defineProperty(scope, aliasName, {
+        enumerable: true,
+        get: () => factory.#evaluate(aliasName, scope as Required<LazyVariablesScope>)
+      });
+    }
+
+    return scope;
+  }
+
+  static has(scope: LazyVariablesScope, name: PropertyKey): boolean {
+    return getFactory(scope).#has(name);
+  }
+
+  static evaluate(scope: LazyVariablesScope, name: PropertyKey): unknown {
+    return getFactory(scope).#evaluate(name, scope as Required<LazyVariablesScope>);
+  }
+
   public readonly def: this['variable'];
-  #definitions: Definitions<TShape> = Object.create(null);
+  #definitions: Record<PropertyKey, DefinitionRecord> = Object.create(null);
   #definedInScopeVarNames = new Set<string>();
   #requiredVarNames = new Set<string>();
   #parentScope: LazyVariablesScope | null = null;
@@ -54,8 +83,31 @@ export class LazyVariables<TShape extends LazyVariablesScope = {}> {
 
     this.#definedInScopeVarNames.add(name);
     this.#requiredVarNames.delete(name);
-    this.#definitions[name] = impl as Definitions<TShape>[T];
+    this.#definitions[name] = {
+      impl,
+      owner: this
+    };
     return this as any;
+  }
+
+  #alias(name: string, aliasName: string): this {
+    if (aliasName === 'ref') {
+      throw new Error('Cannot create a variable named `ref` because it is reserved for internal use');
+    }
+
+    if (this.#definedInScopeVarNames.has(aliasName)) {
+      throw new Error(`Variable "${aliasName}" is already defined`);
+    }
+
+    const record = this.#definitions[name];
+
+    if (!record) {
+      throw new Error(`Cannot create alias "${aliasName}" for unknown variable "${name}"`);
+    }
+
+    this.#definedInScopeVarNames.add(aliasName);
+    this.#definitions[aliasName] = record;
+    return this;
   }
 
   subject<T extends string, R>(name: T, impl: R | ((v: TShape) => R)): LazyVariables<TShape & { [K in T]: R } & { subject: R }>
@@ -75,9 +127,12 @@ export class LazyVariables<TShape extends LazyVariablesScope = {}> {
     }
 
     this.#requiredVarNames.add(name);
-    this.#definitions[name] = (() => {
+    this.#definitions[name] = {
+      impl: () => {
       throw new Error(`Variable "${name}" is required but not defined`);
-    }) as Definitions<TShape>[T];
+      },
+      owner: this
+    };
     return this as any;
   }
 
@@ -89,8 +144,15 @@ export class LazyVariables<TShape extends LazyVariablesScope = {}> {
     }
 
     this.#parentScope = parentScope;
-    this.#definitions = { ...parentFactory.#definitions } as Definitions<TShape>;
+    this.#definitions = Object.assign(
+      Object.create(parentFactory.#definitions),
+      this.#definitions
+    );
     return this as any;
+  }
+
+  #has(name: PropertyKey): boolean {
+    return name in this.#definitions;
   }
 
   scope(): TShape & { ref: LazyRefs<TShape> } {
@@ -99,7 +161,7 @@ export class LazyVariables<TShape extends LazyVariablesScope = {}> {
     Object.defineProperties(scope, {
       [VALUES_KEY]: { value: new Map<PropertyKey, unknown>() },
       [FACTORY_KEY]: { value: this },
-      [EVALUATING_KEY]: { value: new Set<PropertyKey>() },
+      [EVALUATING_KEY]: { value: [] },
       ref: {
         get() {
           if (hasOwn(this, REF_PROXY_KEY)) return this[REF_PROXY_KEY];
@@ -114,8 +176,12 @@ export class LazyVariables<TShape extends LazyVariablesScope = {}> {
       }
     });
 
-    const keys = Object.keys(this.#definitions) as Array<keyof Definitions<TShape>>;
-    for (const key of keys) {
+    const keys = Object.create(null);
+    for (const key in this.#definitions) {
+      keys[key] = true;
+    }
+
+    for (const key of Object.keys(keys) as Array<keyof Definitions<TShape>>) {
       Object.defineProperty(scope, key, {
         enumerable: true,
         get: () => this.#evaluate(key, scope as Required<LazyVariablesScope>)
@@ -132,27 +198,47 @@ export class LazyVariables<TShape extends LazyVariablesScope = {}> {
     }
 
     const factory = scope[FACTORY_KEY];
-    const evaluating = scope[EVALUATING_KEY];
-    if (evaluating.has(key)) {
-      const parentScope = factory.#parentScope;
-      // Circular reference: delegate to parent scope with current receiver
-      if (!parentScope || !(key in parentScope)) {
-        throw new Error(`Circular dependency detected for variable "${String(key)}" with no parent scope`);
-      }
-      return this.#evaluate(key, parentScope as Required<LazyVariablesScope>, receiver);
+    const record = factory.#definitions[key];
+    if (!record) {
+      return undefined;
     }
 
-    evaluating.add(key);
+    const evaluating = receiver[EVALUATING_KEY];
+    const activeFrame = evaluating[evaluating.length - 1];
+    if (activeFrame?.record === record) {
+      return record.owner.#evaluateInParent(key, receiver);
+    }
+
+    if (evaluating.some((frame) => frame.record === record)) {
+      throw new Error(`Circular dependency detected for variable "${String(key)}" with no parent scope`);
+    }
+
+    evaluating.push({ record });
     try {
-      const def = factory.#definitions[key as keyof Definitions<TShape>];
-      const value = typeof def === 'function' ? def(receiver) : def;
+      const def = record.impl;
+      const isFactory = typeof def === 'function';
+      const value = isFactory ? (def as (scope: LazyVariablesScope) => unknown)(receiver) : def;
       values.set(key, value);
-      LazyVariables.#onValueCreated?.(value, key, values);
+      if (isFactory) {
+        LazyVariables.#onValueCreated?.(value, key, values);
+      }
 
       return value;
     } finally {
-      evaluating.delete(key);
+      evaluating.pop();
     }
+  }
+
+  #evaluateInParent(key: PropertyKey, receiver: Required<LazyVariablesScope>): unknown {
+    const parentScope = this.#parentScope;
+
+    const parentFactory = parentScope?.[FACTORY_KEY] as LazyVariables<any> | undefined;
+
+    if (!parentScope || !parentFactory || !parentFactory.#has(key)) {
+      throw new Error(`Circular dependency detected for variable "${String(key)}" with no parent scope`);
+    }
+
+    return parentFactory.#evaluate(key, parentScope as Required<LazyVariablesScope>, receiver);
   }
 }
 
@@ -167,7 +253,7 @@ export function lazy<T extends LazyVariablesScope>(builder: (b: LazyVariables<{}
 type LazyVariablesScope = Record<string, unknown> & {
   [VALUES_KEY]?: Map<PropertyKey, unknown>
   [FACTORY_KEY]?: LazyVariables<any>
-  [EVALUATING_KEY]?: Set<PropertyKey>
+  [EVALUATING_KEY]?: EvaluationFrame[]
 };
 
 export function clearScope(scope: LazyVariablesScope) {
@@ -178,4 +264,14 @@ export function clearScope(scope: LazyVariablesScope) {
   }
 
   values.clear();
+}
+
+function getFactory(scope: LazyVariablesScope): LazyVariables<any> {
+  const factory = scope[FACTORY_KEY];
+
+  if (!factory) {
+    throw new Error('Trying to get factory from not a lazy variables scope');
+  }
+
+  return factory;
 }
