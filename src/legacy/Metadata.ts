@@ -2,7 +2,6 @@ import { LazyVariables, clearScope } from '../LazyVariables.ts';
 import { hasOwn } from './utils.ts';
 
 const LAZY_VARS_FIELD = Symbol('__lazyVars');
-const EXAMPLES_PREFIX = 'SHARED_EXAMPLES:';
 
 export type Suite = Record<PropertyKey, any> & {
   parent?: Suite;
@@ -10,16 +9,16 @@ export type Suite = Record<PropertyKey, any> & {
 };
 
 type Definition = ((...args: unknown[]) => unknown) | unknown;
+type SharedExamples = Record<string, (...args: unknown[]) => unknown>;
 
 export class Metadata {
-  #vars: LazyVariables;
   parent?: Metadata;
+  #vars = new LazyVariables();
   #scope: Record<string, unknown> | null = null;
-  #varNames = new Set<string>();
+  #examples: SharedExamples = Object.create(null);
 
-  static of(context: Suite): Metadata | undefined {
-    const metadata: Metadata | undefined = context[LAZY_VARS_FIELD];
-    return metadata;
+  static of(context: Suite | undefined): Metadata | undefined {
+    return context?.[LAZY_VARS_FIELD];
   }
 
   static ensureDefinedOn(context: Suite): Metadata {
@@ -30,36 +29,43 @@ export class Metadata {
     return context[LAZY_VARS_FIELD];
   }
 
-  constructor() {
-    this.#vars = new LazyVariables();
-  }
-
   #getScope() {
     this.#scope ??= this.#vars.scope();
     return this.#scope;
   }
 
   getVarValue(name: string): unknown {
-    return this.#getScope()[name];
+    return LazyVariables.evaluate(this.#getScope(), name);
   }
 
   hasVar(name: string): boolean {
-    return this.#varNames.has(name);
+    return LazyVariables.has(this.#getScope(), name);
   }
 
   addChild(child: Metadata): void {
     child.parent = this;
     child.#vars.extends(this.#getScope());
+    child.#examples = Object.assign(Object.create(this.#examples), child.#examples);
   }
 
   addVar(name: string, definition: Definition): void {
-    this.#vars.variable(name, definition);
-    this.#varNames.add(name);
+    const impl = typeof definition === 'function'
+      ? () => (definition as (...args: unknown[]) => unknown)()
+      : definition;
+
+    try {
+      this.#vars.variable(name, impl);
+    } catch (error) {
+      if (error instanceof Error && error.message === `Variable "${name}" is already defined`) {
+        throw new Error(`Cannot define "${name}" variable twice in the same suite.`);
+      }
+
+      throw error;
+    }
   }
 
   addAliasFor(name: string, aliasName: string): void {
-    this.#vars.variable(aliasName, (scope: Record<string, unknown>) => scope[name]);
-    this.#varNames.add(aliasName);
+    LazyVariables.alias(this.#getScope(), name, aliasName);
   }
 
   releaseVars(): void {
@@ -70,12 +76,15 @@ export class Metadata {
   }
 
   addExamplesFor(name: string, definition: Definition): void {
-    const examplesName = EXAMPLES_PREFIX + name;
-    this.addVar(examplesName, definition);
+    if (hasOwn(this.#examples, name)) {
+      throw new Error(`Attempt to override "${name}" shared example`);
+    }
+
+    this.#examples[name] = definition as (...args: unknown[]) => unknown;
   }
 
   runExamplesFor(name: string, args: unknown[]): unknown {
-    const examples = this.#getScope()[EXAMPLES_PREFIX + name];
+    const examples = this.#examples[name];
 
     if (typeof examples !== 'function') {
       throw new Error(`Attempt to include not defined shared behavior "${name}"`);

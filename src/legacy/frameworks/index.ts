@@ -6,14 +6,15 @@ let uiBuilder: {
 } | undefined;
 
 try {
-  require('mocha'); // eslint-disable-line
-  uiBuilder = require('./mocha');
-} catch {
   if (typeof jest !== 'undefined') {
     uiBuilder = require('./jasmine'); // eslint-disable-line
   } else if (global.jasmine) {
     uiBuilder = require('./jasmine');  // eslint-disable-line
+  } else {
+    require('mocha'); // eslint-disable-line
+    uiBuilder = require('./mocha');
   }
+} catch {
 }
 
 if (!uiBuilder) {

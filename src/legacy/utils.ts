@@ -52,6 +52,10 @@ export function defineGetter(context: GetterContext, varName: string, options?: 
     return;
   }
 
+  if (accessorName in varContext) {
+    throw new Error(`Cannot create lazy variable "${varName}" as variable with the same name exists on the provided context`);
+  }
+
   varContext[LAZY_VARS_PROP_NAME].add(accessorName);
   Object.defineProperty(varContext, accessorName, {
     configurable: true,

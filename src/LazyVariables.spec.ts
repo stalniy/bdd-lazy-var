@@ -38,6 +38,43 @@ describe('LazyVariables', () => {
 
       expect(vars.def).toBe(vars.variable);
     });
+
+    it('can evaluate a variable added after a scope is created', () => {
+      const vars = new LazyVariables<{ name: string }>();
+      const scope = vars.scope();
+
+      vars.variable('name', 'John');
+
+      expect(LazyVariables.evaluate(scope, 'name')).toBe('John');
+    });
+  });
+
+  describe('alias()', () => {
+    it('defines another name for the same variable definition', () => {
+      const vars = new LazyVariables();
+      vars.variable('name', 'John');
+      const scope = vars.scope() as any;
+      LazyVariables.alias(scope, 'name', 'subject');
+
+      expect(scope.name).toBe('John');
+      expect(scope.subject).toBe('John');
+    });
+
+    it('uses the parent definition when an alias references itself', () => {
+      const parent = lazy(b => b
+        .variable('name', 'Parent')
+      ) as any;
+      LazyVariables.alias(parent, 'name', 'subject');
+
+      const child = lazy(b => b
+        .extends(parent)
+        .variable('nested', (v: any) => v.subject)
+      ) as any;
+      LazyVariables.alias(child, 'nested', 'subject');
+
+      expect(child.nested).toBe('Parent');
+      expect(child.subject).toBe('Parent');
+    });
   });
 
   describe('subject()', () => {
