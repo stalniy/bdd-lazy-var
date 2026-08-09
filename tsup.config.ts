@@ -3,9 +3,11 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: [
     'src/index.ts',
-    'src/extensions/*.ts'
+    'src/extensions/*.ts',
+    "src/legacy/dialects/*.ts",
   ],
   format: ['esm', 'cjs'],
+  cjsInterop: true,
   dts: true,
   sourcemap: true,
   clean: true,

@@ -1,5 +1,5 @@
 const VALUES_KEY = Symbol('values');
-const FACTORY_KEY = Symbol('factory');
+export const FACTORY_KEY = Symbol('factory');
 const EVALUATING_KEY = Symbol('evaluating');
 const REF_PROXY_KEY = Symbol('refProxy');
 
@@ -66,7 +66,7 @@ export class LazyVariables<TShape extends LazyVariablesScope = {}> {
     }
 
     return this.variable('subject', args[1])
-      .variable(args[0] as string, args[1]);
+      .variable(args[0] as string, (scope: { subject: unknown }) => scope.subject);
   }
 
   require<T extends string, R>(name: T): LazyVariables<TShape & { [K in T]: R }> {
@@ -116,16 +116,6 @@ export class LazyVariables<TShape extends LazyVariablesScope = {}> {
 
     const keys = Object.keys(this.#definitions) as Array<keyof Definitions<TShape>>;
     for (const key of keys) {
-      const def = this.#definitions[key];
-
-      if (typeof def !== 'function') {
-        Object.defineProperty(scope, key, {
-          enumerable: true,
-          value: def
-        });
-        continue;
-      }
-
       Object.defineProperty(scope, key, {
         enumerable: true,
         get: () => this.#evaluate(key, scope as Required<LazyVariablesScope>)
