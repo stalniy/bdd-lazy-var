@@ -67,7 +67,7 @@
     "mocha": "^11.0.0",
     "puppeteer": "^24.0.0",
     "rollup": "^4.0.0",
-    "@rollup/plugin-babel": "^6.0.0",
+    "@rollup/plugin-babel": "^7.0.0",
     "rollup-plugin-commonjs": "^10.0.0",
     "rollup-plugin-inject": "^3.0.0",
     "semantic-release": "^24.0.0"
