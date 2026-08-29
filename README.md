@@ -439,6 +439,7 @@ In accordance with Rspec's DDL, `context`, `xcontext`, and `fcontext` have been 
 * ability to shadow parent's variable
 * variable inheritance with access to parent variables
 * supports typescript
+* ability to make instantiation eager (similiar to RSpec's `let!`)
 
 For more information, read [the article on Medium](https://medium.com/@sergiy.stotskiy/lazy-variables-with-mocha-js-d6063503104c#.ceo9jvrzh).
 
