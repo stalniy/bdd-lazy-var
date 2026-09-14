@@ -345,11 +345,46 @@ sharedExamplesFor('Lazy Vars Interface', function(getVar) {
   });
 });
 
+class SpyUtilityClass {
+  static functionThatShouldNotBeCalledBecauseLazyIsOffByDefault = spy();
+  static functionThatShouldNotBeCalledBecauseLazyWasExplicitlySetToTrue = spy();
+  static functionThatShouldBeCalled = spy();
+}
+
 sharedExamplesFor('Root Lazy Vars', function(getVar) {
-  const varName = `hello.${Date.now()}.${Math.random()}`
+  const varName = `hello.${Date.now()}.${Math.random()}`;
+  const nonLazyVarName = `nonLazy.${Date.now()}.${Math.random()}`;
+  const lazyVarName = `lazy.${Date.now()}.${Math.random()}`;
+  const explicitlyLazyVarName = `explicitlyLazy.${Date.now()}.${Math.random()}`;
+  const implicitlyLazyVarName = `implicitlyLazy.${Date.now()}.${Math.random()}`;
+
 
   def(varName, function() {
-    return 'world'
+    return 'world';
+  });
+
+  def(nonLazyVarName, function() {
+    SpyUtilityClass.functionThatShouldBeCalled();
+  }, { lazy: false });
+
+  def(implicitlyLazyVarName, function() {
+    SpyUtilityClass.functionThatShouldNotBeCalledBecauseLazyIsOffByDefault();
+  });
+
+  def(explicitlyLazyVarName, function() {
+    SpyUtilityClass.functionThatShouldNotBeCalledBecauseLazyWasExplicitlySetToTrue();
+  });
+
+  it('should eagerly evaluate defs with {lazy: false}', function() {
+    expect(SpyUtilityClass.functionThatShouldBeCalled).to.have.been.called.once;
+  });
+
+  it('should lazily evaluate defs with {lazy: true}', function() {
+    expect(SpyUtilityClass.functionThatShouldNotBeCalledBecauseLazyWasExplicitlySetToTrue).not.to.have.been.called();
+  });
+
+  it('should lazily evaluate by default', function() {
+    expect(SpyUtilityClass.functionThatShouldNotBeCalledBecauseLazyIsOffByDefault).not.to.have.been.called();
   });
 
   it('allows to define lazy vars at root level', function() {
